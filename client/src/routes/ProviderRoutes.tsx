@@ -18,6 +18,7 @@ import ProviderServices from "../providers/pages/providerServices/ProviderServic
 import AddStaff from "../providers/pages/staffs/AddStaff";
 import EditStaff from "../providers/pages/staffs/EditStaff";
 import ProfilePage from "../providers/pages/profile/ProfilePage"
+import Bookings from "../providers/pages/bookings/Bookings";
 
 const ProviderRoutes = () => {
   return (
@@ -98,6 +99,10 @@ const ProviderRoutes = () => {
           <Route
           path="/profile"
           element={<ProfilePage userType={"provider"} />}
+        />
+         <Route
+          path="/bookings"
+          element={<Bookings userType={"provider"} />}
         />
       </Routes>
      

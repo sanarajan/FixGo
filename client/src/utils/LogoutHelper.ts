@@ -7,7 +7,6 @@ import store from "../redux/Store";
 import customerAxiosClient from "../api/customerAxiosClient";
 import axiosClient from "../api/axiosClient";
 
-// Make logoutUser async so you can await internal calls
 export const logout = async (userRole?: string) => {
   // const currentRole = getRoleFromPath();
   const currentRole =userRole;
@@ -18,7 +17,6 @@ export const logout = async (userRole?: string) => {
       if (currentRole === "provider" || currentRole === "admin") {
         response = await axiosClient.post(`/api/admin/adminLogout`);
       } else if (currentRole === "customer") {
-        console.log("  yes customer from function logout")
 
         response = await customerAxiosClient.post(`/api/customerLogout`);
       }
@@ -37,8 +35,6 @@ export const logout = async (userRole?: string) => {
 
   // Await the result of logouthandle
   const role = await logouthandle(currentRole||"")
-console.log(role+"  role from function logout")
-  // Now handle clearing state/localStorage and navigation
   if (role) {
     console.log(" yes role")
     const keysToRemove = [
@@ -71,7 +67,6 @@ console.log(role+"  role from function logout")
     const redirectPath = getRedirectPathFromCurrentRoute();
     window.location.href = redirectPath;
   } else {
-    // No role found or API failed → fallback login
     window.location.href = "/";
   }
 };
