@@ -7,6 +7,9 @@ export interface IOrderRepository {
    
     savingOrder?: IOrder
   ): Promise<IOrder >;
-
-  
+providerOrderList(
+  providerId: string,
+  page: number,
+  limit: number
+): Promise<{ orders: IOrder[]; totalCount: number }>;
 }

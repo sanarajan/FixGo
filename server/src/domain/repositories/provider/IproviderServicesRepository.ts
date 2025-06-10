@@ -12,5 +12,6 @@ export interface IproviderServicesRepository {
   GroupProviderServices(adminId:string): Promise<GroupedProviderService[] | null>;   
   addMultipleStaffServices(data: Partial<IproviderServices>[]): Promise<IproviderServices[]>;
 removeStaffService(staffId: string, serviceId: string, subcategoryId: string): Promise<void>;
+ 
 
 }

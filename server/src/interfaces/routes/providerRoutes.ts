@@ -26,6 +26,7 @@ import {
     providerEditAddress,
     providerPasswordReset
 } from "../controllers/ProviderController";
+import {bookingList} from "../controllers/OrderController"
 import { protectedRoute } from "../../middlewares/authMiddleware";
 
 router.get("/customersList", protectedRoute, getAllCustomers);
@@ -48,6 +49,7 @@ router.get("/providerProfile", protectedRoute, providerProfile);
 router.patch("/providerEditPersonal", protectedRoute, providerEditPersonal);
 router.patch("/providerEditAddress", protectedRoute, providerEditAddress);
 router.post("/providerPasswordReset",protectedRoute, providerPasswordReset);
+router.get("/bookingList",protectedRoute, bookingList);
 
 
 
