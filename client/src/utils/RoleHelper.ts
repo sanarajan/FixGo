@@ -36,7 +36,7 @@ export const getDashboardRedirectPath = (role: UserRole): string => {
     [UserRole.ADMIN]: "/admin/dashboard",
     [UserRole.CUSTOMER]: "/home",
     [UserRole.STAFF]: "/staff/home",
-    [UserRole.PROVIDER]: "/provider/home",
+    [UserRole.PROVIDER]: "/provider/dashboard",
     [UserRole.WORKER]: "/worker/home",
   };
   return paths[role] || "/";

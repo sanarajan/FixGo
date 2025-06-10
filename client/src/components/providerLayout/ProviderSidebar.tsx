@@ -29,7 +29,7 @@ const menuItems: MenuItem[] = [
   { label: "CUSTOMERS", icon: <FaUsers />, path: "/provider/customers" },
   { label: "STAFFS", icon: <FaUsers />, path: "/provider/staffs" },
   { label: "SERVICES", icon: <FaCogs />, path: "/provider/services" },
-  { label: "BOOKINGS", icon: <FaBox />, path: "/bookings" },
+  { label: "BOOKINGS", icon: <FaBox />, path: "/provider/bookings" },
   { label: "PAYMENTS", icon: <FaMoneyBill />, path: "/payments" },
   { label: "REPORT", icon: <FaChartBar />, path: "/report" },
 ];

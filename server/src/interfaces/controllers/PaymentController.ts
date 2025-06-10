@@ -50,7 +50,6 @@ export const create_checkout_session = async (
 };
 
 export const stripeWebhook = async (req: Request, res: Response): Promise<void> => {
-    console.log("reach a[pay")
 
   const sig = req.headers["stripe-signature"];
   // console.log("Webhook received with signature:", sig);
@@ -67,17 +66,14 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
   } catch (err: any) {
     console.error("Webhook signature verification failed.", err.message);
     res.status(400).send(`Webhook Error: ${err.message}`);
-    return; // Important: stop further processing on error
+    return; 
   }
 
-  // Handle event type
   if (event.type === "checkout.session.completed") {
-    console.log("completed a[pay")
 
     const session = event.data.object as Stripe.Checkout.Session;
     // console.log("Payment completed for session:", session.id);
       const paymentIntentId = session.payment_intent as string;
-console.log(paymentIntentId+"paymentid")
     const orderId = session.metadata?.orderId;
     if (!orderId) {
       console.error("No orderId found in metadata.");
@@ -85,7 +81,6 @@ console.log(paymentIntentId+"paymentid")
       return;
     }
 
-    // Update order as ADVANCE PAID
     await OrdersModel.findByIdAndUpdate(orderId, {
       paymentStatus: "advance paid",
       bookingStatus:"Upcoming",
@@ -111,7 +106,6 @@ console.log(paymentIntentId+"paymentid")
       res.status(400).send("No orderId found in metadata.");
       return;
     }
-        console.log("session expires"+orderId)
 
     // Update order as Cancelled
     await OrdersModel.findByIdAndUpdate(orderId, {
@@ -127,9 +121,7 @@ console.log(paymentIntentId+"paymentid")
       },
     });
 
-    console.log(`Order ${orderId} updated to CANCELLED`);
   } else if (event.type === "payment_intent.payment_failed") {
-        console.log("session failed")
 
     const paymentIntent = event.data.object as Stripe.PaymentIntent;
     console.log("Payment failed for intent:", paymentIntent.id);
@@ -140,7 +132,6 @@ console.log(paymentIntentId+"paymentid")
       res.status(400).send("No orderId found in metadata.");
       return;
     }
-        console.log("session failed"+orderId)
 
     // Update order as Payment Failed
     await OrdersModel.findByIdAndUpdate(orderId, {
