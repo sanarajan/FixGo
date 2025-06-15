@@ -17,10 +17,8 @@ export class CreateCheckoutSessionUseCase {
     serviceId: string;
     savingOrder: IOrder;
   }): Promise<string> {
-        console.log( "  usecase reach")
 
     data.savingOrder.workerId = generateWorkerId();
-    console.log( data.savingOrder.workerId+" WORKERID usecase")
  const saveOrder = await this.orderRepo.saveOrder(data.savingOrder);
 
     const url = await this.paymentService.createCheckoutSession({

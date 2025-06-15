@@ -5,7 +5,8 @@ import {
   register,
   login,
   refreshToken, 
-  customerRefreshToken, 
+  customerRefreshToken,
+  adminRefreshToken, 
   emailVerification,
   validateOtp,
   googleLogin,
@@ -23,6 +24,7 @@ import {adminServices,
   getCustomerAddress
 } from "../controllers/CustomerController"
 import { create_checkout_session,stripeWebhook  } from "../controllers/PaymentController";
+import {customerBookings} from "../controllers/OrderController"
 
 const router = express.Router();
 
@@ -30,6 +32,7 @@ router.post("/register", register);
 router.post("/login", login);
 router.post("/auth/refresh", refreshToken);
 router.post("/auth/refreshCustomer", customerRefreshToken);
+router.post("/auth/adminRefreshToken", adminRefreshToken);
 
 
 router.post("/emailVerification", emailVerification);
@@ -48,6 +51,7 @@ router.get("/getCustomerAddress",customerAuthProtect, getCustomerAddress);
 router.post("/create_checkout_session", customerAuthProtect, create_checkout_session);
 
 router.post("/customerLogout",customerAuthProtect,  customerLogout);
+router.get("/bookingList",customerAuthProtect,  customerBookings);
 
 
 

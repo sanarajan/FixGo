@@ -12,4 +12,11 @@ providerOrderList(
   page: number,
   limit: number
 ): Promise<{ orders: IOrder[]; totalCount: number }>;
+
+customerOrderList(
+  customerId: string,
+  page: number,
+  limit: number
+): Promise<{ orders: IOrder[]; totalCount: number }>;
 }
+

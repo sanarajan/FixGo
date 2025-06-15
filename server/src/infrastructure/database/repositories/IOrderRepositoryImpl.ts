@@ -39,4 +39,32 @@ const totalCount = await OrdersModel.countDocuments(query);
 
     return { orders, totalCount };
   }
+
+  
+   async customerOrderList(
+    customerId: string,
+    page: number,
+    limit: number
+  ): Promise<{ orders: IOrder[]; totalCount: number }> {
+   const skip = (page - 1) * limit;
+
+  const query = { customerId };
+
+  const orders = await OrdersModel.find(query)
+    .populate("serviceId", "serviceName")
+    .populate("subcategoryId", "subcategory")
+    .populate("providerId", "fullname email phone image")
+    .populate("customerId", "fullname email phone image") // note: just use image, don't alias as `custImage`
+    .populate("providerServiceId", "image  description features")
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit)
+     .lean()
+ 
+  const totalCount = await OrdersModel.countDocuments(query);
+
+  
+
+    return { orders, totalCount };
+  }
 }

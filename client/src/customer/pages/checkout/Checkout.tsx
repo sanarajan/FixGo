@@ -109,11 +109,12 @@ const Checkout: React.FC = () => {
       "subcategoryId" ,subcateId)
     try {
        const savingOrder = {
-      workerId: "ggh767658", // you can assign worker later if needed
+     
       customerId: user?._id,
       providerId: idProvider,
       serviceId: serviceId,
       subcategoryId: subcateId,
+      providerServiceId:providerServiceId,
       // paymentStatus: "advance paid",
       // bookingStatus: "Pending",
       amount: {
