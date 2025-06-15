@@ -96,8 +96,9 @@ const AddStaff: React.FC<CustomersProps> = ({ userType }) => {
   };
   const fetchServiceAndSubcategories = async () => {
     try {
-      const response = await axiosClient.get(
-        "/api/provider/groupedProviderServices",
+     
+       const response = await axiosClient.get(
+        "/api/provider/listingServiceForStaff",
         {
           headers: {
             userRole: userType,
@@ -112,6 +113,7 @@ const AddStaff: React.FC<CustomersProps> = ({ userType }) => {
       setServicesData([]);
     }
   };
+  console.log(JSON.stringify(servicesData,null,2)+" servicel ist")
   // Fetch subcategories
 
   const toggleExpand = (serviceId: string) => {
@@ -233,11 +235,11 @@ const AddStaff: React.FC<CustomersProps> = ({ userType }) => {
       toast.error(errors.location);
       return;
     }
-    if (!serviceValid) {
-      setFormErrors(errors);
-      toast.error("Please select services");
-      return;
-    }
+    // if (!serviceValid) {
+    //   setFormErrors(errors);
+    //   toast.error("Please select services");
+    //   return;
+    // }
     if (!finalLocation) {
       toast.error("Location is required");
       return;
@@ -266,7 +268,7 @@ const AddStaff: React.FC<CustomersProps> = ({ userType }) => {
     formPayload.append("latitude", coordinates?.lat.toString() ?? "");
     formPayload.append("longitude", coordinates?.lng.toString() ?? "");
     if (formData.image) formPayload.append("image", formData.image);
-    formPayload.append("services", JSON.stringify(selectedServices));
+    // formPayload.append("services", JSON.stringify(selectedServices));
     // for (let pair of formPayload.entries()) {
     //   console.log(pair[0], pair[1]);
     // }

@@ -12,3 +12,4 @@
 #register frontend url in google console
 #nodemailer for mail service
 #otp verificatio crypto used for create unique otp
+#we create stripe using local working stripe key but if we setup in online code we need secretkey in webhook #controller function in back end
