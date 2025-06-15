@@ -4,7 +4,7 @@ import { ProviderServicesModel } from "../models/ProviderServicesModel";
 import { StaffServicesModel } from "../models/StaffServicesModel";
 import { tokenUserData } from "../../../domain/models/Iservices";
 import { IproviderServices } from "../../../domain/models/IproviderServices";
-// import {SubcategoryModel} from "../models/SubcategoryModel"
+import {SubcategoryModel} from "../models/SubcategoryModel"
 import { ServiceModel, IService } from "../models/ServiceModel";
 import mongoose, { Types } from "mongoose";
 
@@ -110,6 +110,51 @@ export class IproviderServicesRepositoryImpl
     return updated ? true : false;
   }
 
+ async ServiceListForStaff(
+    adminId: string
+  ): Promise<GroupedProviderService[] | null> {
+    try {
+      console.log(" reach impl")
+    const results = await SubcategoryModel.aggregate([
+  {
+    $lookup: {
+      from: "services",
+      localField: "serviceId",
+      foreignField: "_id",
+      as: "serviceDetails"
+    }
+  },
+  {
+    $unwind: "$serviceDetails"
+  },
+  {
+    $group: {
+      _id: "$serviceDetails._id",  // Group by service ID
+      serviceName: { $first: "$serviceDetails.serviceName" },
+      subcategories: {
+        $addToSet: {
+          _id: "$_id",              // subcategory ID
+          name: "$subcategory"      // subcategory name
+        }
+      }
+    }
+  },
+  {
+    $project: {
+      _id: 0,
+      serviceId: "$_id",
+      serviceName: 1,
+      subcategories: 1
+    }
+  }
+]);
+
+      return results;
+    } catch (err: any) {
+      console.error("❌ Error saving provider service:", err.message);
+      throw err;
+    }
+  }
   async GroupProviderServices(
     adminId: string
   ): Promise<GroupedProviderService[] | null> {

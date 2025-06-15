@@ -22,6 +22,8 @@ import {ProviderEditUsecase} from "../../application/use-cases/provider/provider
 import {ProviderAddressEditUsecase} from "../../application/use-cases/provider/providerServices/ProviderAddressEditUsecase"
 import bcrypt from "bcrypt";
 import {ProviderResetPasswordUsecase} from "../../application/use-cases/provider/providerServices/ProviderResetPasswordUsecase"
+import { ServiceListForStaffUsecase } from "../../application/use-cases/provider/providerServices/ServiceListForStaffUsecase";
+
 interface CustomError extends Error {
   status?: number;
 }
@@ -151,6 +153,20 @@ export const groupedProviderServices = async (req: Request, res: Response) => {
     const adminId=admin.id
     const id = req.params.id;
     const servicesFetch = container.resolve(GroupProviderServiceUsecase);
+    const services = await servicesFetch.execute(adminId);
+    res.status(200).json({ services });
+  } catch (err) {
+    const e = err as CustomError;
+    res.status(e.status || 400).json({ error: e.message });
+  }
+};
+
+export const listingServiceForStaff = async (req: Request, res: Response) => {
+  try {
+    const admin = (req as any).user;
+    const adminId=admin.id
+    const id = req.params.id;
+    const servicesFetch = container.resolve(ServiceListForStaffUsecase);
     const services = await servicesFetch.execute(adminId);
     res.status(200).json({ services });
   } catch (err) {
