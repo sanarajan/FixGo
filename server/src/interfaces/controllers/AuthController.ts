@@ -99,6 +99,36 @@ const refreshToken = async (
   }
 };
 
+const adminRefreshToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+
+    const refreshToken = req.cookies["admin_refreshToken"];
+    if (!refreshToken) {    
+      res.status(400).json({ message: "Refresh token missing" });
+      return;
+    }
+    const refreshTokenUseCase = container.resolve(RefreshTokenUseCase);
+    const { accessToken, role,id } = refreshTokenUseCase.execute(refreshToken);
+
+    const userRepository = container.resolve<UserRepository>("UserRepository");
+    const user = await userRepository.findByRoleAndId(id,role);
+
+    if (!user) {
+      res.status(404).json({ message: "user not exist" });
+    }
+
+    res.status(200).json({ accessToken, role });
+  } catch (err) {
+    const error = err as CustomError;
+    res
+      .status(error.status || 401)
+      .json({ error: error.message || "Invalid refresh token" });
+  }
+};
 const customerRefreshToken = async (
   req: Request,
   res: Response,
@@ -334,6 +364,7 @@ export {
   customerLogout,
   refreshToken,
   customerRefreshToken,
+  adminRefreshToken,
   emailVerification,
   validateOtp,
   googleLogin,

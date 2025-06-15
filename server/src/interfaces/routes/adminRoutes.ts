@@ -21,7 +21,7 @@ import {
   deleteSubcategory
 } from "../controllers/ServiceController";
 import { protectedRoute } from "../../middlewares/authMiddleware";
-
+import {adminAuthProtect} from "../../middlewares/adminMiddleware"
 router.get("/customers", protectedRoute, getAllCustomers);
 router.get("/providers", protectedRoute, getAllProviders);
 router.patch("/blockUnblockProvider/:id", protectedRoute, blockUnblockProvider);

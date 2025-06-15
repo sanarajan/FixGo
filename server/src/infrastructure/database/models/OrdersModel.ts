@@ -11,6 +11,8 @@ const OrdersSchema: Schema = new Schema(
     providerId: { type: Types.ObjectId, ref: "User", required: true },
     serviceId: { type: Types.ObjectId, ref: "Service", required: true },
     subcategoryId: { type: Types.ObjectId, ref: "Subcategories", required: true },
+    providerServiceId:{ type: Types.ObjectId, ref: "ProviderService", required: true },
+    
     cartId: { type: Types.ObjectId, ref: "Cart" }, // if used
     paymentStatus: {
       type: String,

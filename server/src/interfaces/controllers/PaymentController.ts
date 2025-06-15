@@ -8,8 +8,7 @@ import { IOrder } from "../../domain/models/IOrder";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 //this only for local usage. for public domain we use STRIPE_SECRET_KEY instead of this
-const endpointSecret = 'whsec_6684fb171b754a6cdc67bf3e01715055c6e18bfe971d857bd50ed45b2cd98668';
-
+const  endpointSecret = process.env.ENDPOINTSECRET
 export const create_checkout_session = async (
   req: Request,
   res: Response
@@ -50,9 +49,9 @@ export const create_checkout_session = async (
 };
 
 export const stripeWebhook = async (req: Request, res: Response): Promise<void> => {
-
+console.log(endpointSecret+" stripeid")
   const sig = req.headers["stripe-signature"];
-  // console.log("Webhook received with signature:", sig);
+  console.log("Webhook received with signature:", sig);
 
   let event: Stripe.Event;
 
@@ -61,7 +60,7 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
       req.body, // raw body
       sig!,
       // process.env.STRIPE_WEBHOOK_SECRET!
-      endpointSecret 
+      endpointSecret as string
     );
   } catch (err: any) {
     console.error("Webhook signature verification failed.", err.message);
@@ -70,6 +69,7 @@ export const stripeWebhook = async (req: Request, res: Response): Promise<void> 
   }
 
   if (event.type === "checkout.session.completed") {
+console.log(" conmpleted")
 
     const session = event.data.object as Stripe.Checkout.Session;
     // console.log("Payment completed for session:", session.id);
