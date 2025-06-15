@@ -6,6 +6,7 @@ import {
   Libraries,
 } from "@react-google-maps/api";
 import { useState } from "react";
+import useBrowserLocation from "../../hooks/useBrowserLocation";
 
 const containerStyle = {
   width: "100%",
@@ -37,7 +38,15 @@ function LocationPicker({
     center
   );
   const mapRef = useRef<google.maps.Map | null>(null);
-
+  const { defaultCords, defaultAddress } = useBrowserLocation();
+useEffect(()=>{
+  if (!coordinates&&defaultCords &&defaultAddress && defaultCords?.lat !== undefined && defaultCords?.lng !== undefined) {
+       const lat =defaultCords?.lat;
+      const lng =defaultCords?.lng;
+     const address =defaultAddress
+       onLocationSelect({ lat, lng, address });
+    }
+},[defaultCords])
   useEffect(() => {
     if (coordinates) {
       setMarker(coordinates); // 👈 Show marker from autocomplete

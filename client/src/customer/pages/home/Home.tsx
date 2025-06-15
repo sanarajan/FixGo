@@ -53,12 +53,18 @@ const Home: React.FC = () => {
 
     if (service.length === 0||!geckUser) fetchServices();
 
+  //  if (coordinates) {
+  //   defaultAddress(); // <=== triggers when coordinates updated
+  // }
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [geckUser,service]);
   useEffect(() => {
+  //    if (!coordinates) {
+  //   getBrowserLocation();
+  // }
     if (query.trim() === "") {
       setSuggestions([]);
       return;
@@ -68,6 +74,39 @@ const Home: React.FC = () => {
     );
     setSuggestions(filtered);
   }, [query, subcategories]);
+//   const defaultAddress =()=>{
+//   fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${coordinates?.lat}&lon=${coordinates?.lng}`)
+//       .then(res => res.json())
+//       .then(data => {
+//         if (data?.display_name) {
+//           setLocationAddress(data.display_name);
+//           setFormData((prev) => ({ ...prev, location: data.display_name }));
+//         }
+//       })
+//       .catch(err => {
+//         console.error("Reverse geocoding failed", err);
+//       });
+//     }
+//     const getBrowserLocation = () => {
+//   if (navigator.geolocation) {
+//     navigator.geolocation.getCurrentPosition(
+//       (position) => {
+//         const coords = {
+//           lat: position.coords.latitude,
+//           lng: position.coords.longitude,
+//         };
+//         setCoordinates(coords); // this triggers defaultAddress via useEffect
+//       },
+//       (error) => {
+//         console.error("Error getting location", error);
+//         toast.error("Unable to get your location.");
+//       }
+//     );
+//   } else {
+//     toast.error("Geolocation is not supported by this browser.");
+//   }
+// };
+
   const handleClickOutside = (event: MouseEvent) => {
     if (
       suggestionBoxRef.current &&
@@ -213,7 +252,9 @@ const Home: React.FC = () => {
       }));
     }
   };
-
+ const goSubcategory = (serviceId: string) => {
+    navigate("/subServices", { state: {serviceId }});
+  };
   const API = import.meta.env.VITE_API_URL;
 
   let imageURL = "";
@@ -243,7 +284,7 @@ const Home: React.FC = () => {
                 Home services at your doorstep
               </div>
               <div className="px-4 md:px-8 py-10">
-                <div className="flex flex-col md:flex-row gap-8 mb-2">
+                <div className="cursor-pointer flex flex-col md:flex-row gap-8 mb-2">
                   <LocationAutocomplete
                     locationAddress={locationAddress || ""}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -263,7 +304,7 @@ const Home: React.FC = () => {
                       value={query}
                       onChange={handleInputChange}
                       onClick={handleInputClick}
-                      className="px-4 py-2 border border-gray-300 rounded-md w-full"
+                      className="cursor-pointer px-4 py-2 border border-gray-300 rounded-md w-full"
                     />
                     {showServices && suggestions.length > 0 && (
                       <ul className="absolute z-10 bg-white border mt-1 rounded-md w-full shadow-md max-h-40 overflow-y-auto">
@@ -310,8 +351,11 @@ const Home: React.FC = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 relative">
                     {service.slice(0, 4).map((servic, idx) => (
                       <div
+                      onClick={() => {
+                goSubcategory(servic?.id);
+              }}
                         key={idx}
-                        className="bg-white rounded-lg shadow-md p-4 flex items-center gap-2"
+                        className="bg-white cursor-pointer rounded-lg shadow-md p-4 flex items-center gap-2"
                       >
                         <span>🔧</span>
                         <span>{servic.name}</span>
@@ -321,7 +365,7 @@ const Home: React.FC = () => {
                   <div className="flex justify-end mt-4">
                     <button
                       onClick={clickMore}
-                      className="text-sm px-3 py-1 bg-blue-600 text-white rounded-full shadow hover:bg-blue-700 transition"
+                      className="cursor-pointer text-sm px-3 py-1 bg-blue-600 text-white rounded-full shadow hover:bg-blue-700 transition"
                     >
                       More →
                     </button>

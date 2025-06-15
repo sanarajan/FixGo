@@ -11,6 +11,7 @@ import { setProviderUser } from './redux/ProviderSlice';
 import { setAdminUser } from './redux/AdminSlice';
 import axiosClient from "./api/axiosClient";
 import customerAxiosClient from "./api/customerAxiosClient";
+import adminAxiosClient from "./api/adminAxiosClient"
 import { useSelector } from 'react-redux';
 import { RootState } from "./redux/Store";
 import {
@@ -44,15 +45,16 @@ console.log(providerUser,"provider user")
 const fetchUserData = async () => {
     try {
       let res =null
-      if((userType === "provider"&&providerUser!==null)||(userType ==="admin"&&adminUser==null)) {
+      if((userType === "provider"&&providerUser!==null)) {
          res = await axiosClient.get('/api/fetchUserData', {
         headers: { 
           // "Content-Type": "application/json", 
           userRole: userType },
       });
     }else if(userType === "customer"&&user!==null) {
-console.log(" it is fetching ciustomer login data")
          res = await customerAxiosClient.get('/api/fetchUserData');
+    }else if(userType === "admin"&&user!==null) {
+         res = await adminAxiosClient.get('/api/fetchUserData');
     }
       // console.log(res)
      if (res?.data) {

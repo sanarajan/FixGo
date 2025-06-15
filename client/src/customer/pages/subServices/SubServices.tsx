@@ -26,11 +26,11 @@ interface ServiceCard {
 interface Service {
   name: string;
   id: string;
-  providerId:string;
+  providerId: string;
   providerServiceId: string;
   providerservImg?: string;
- subcategoryId: string;
-serviceId: string;
+  subcategoryId: string;
+  serviceId: string;
   image?: string;
   subcategoryName?: string;
   description?: string;
@@ -87,7 +87,7 @@ const ProviderSubcategoryPage: React.FC = () => {
   const [selectedSubcategories, setSelectedSubcategories] = useState<
     Subcategory[]
   >([]);
-   const navigate=useNavigate();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (serviceid || mainServiceIdState)
@@ -170,7 +170,7 @@ const ProviderSubcategoryPage: React.FC = () => {
           serviceid: subserviceId ? subserviceId : null,
           coordinates: coordinates ? coordinates : null,
           mainServiceId: mainServiceIdState ? mainServiceIdState : null,
-          providerId:null
+          providerId: null,
         }
       );
       let data;
@@ -181,8 +181,8 @@ const ProviderSubcategoryPage: React.FC = () => {
           setSubservices(
             response.data.services.map((item: any) => ({
               name: item.serviceName,
-              providerId:item._id.providerId,
-              providerServiceId:item._id.providerServiceId,
+              providerId: item._id.providerId,
+              providerServiceId: item._id.providerServiceId,
               subcategoryId: item._id.subcategoryId,
               serviceId: item._id.serviceId,
               fullname: item.fullname,
@@ -191,15 +191,15 @@ const ProviderSubcategoryPage: React.FC = () => {
               subcategoryName: item.subcategoryName,
               description: item.description,
               features: item.features,
-              providerservImg:item.providerservImg
+              providerservImg: item.providerservImg,
             }))
           );
           setShowServices(
             response.data.services.map((item: any) => ({
               name: item.serviceName,
               fullname: item.fullname,
-               providerId:item._id.providerId,
-              providerServiceId:item._id.providerServiceId,
+              providerId: item._id.providerId,
+              providerServiceId: item._id.providerServiceId,
               subcategoryId: item._id.subcategoryId,
               serviceId: item._id.serviceId,
               image: item.image,
@@ -207,7 +207,7 @@ const ProviderSubcategoryPage: React.FC = () => {
               description: item.description,
               features: item.features,
               subcategoryName: item.subcategoryName,
-               providerservImg:item.providerservImg
+              providerservImg: item.providerservImg,
             }))
           );
         } else {
@@ -318,14 +318,14 @@ const ProviderSubcategoryPage: React.FC = () => {
 
   return (
     <CustomerLayout>
-      <div className="flex relative min-h-screen bg-gray-100 p-4">
+      <div className="flex relative min-h-screen bg-gradient-to-br from-gray-100 to-white p-4">
         {/* Sidebar Filter */}
         {showFilter && <FilterSidebar />}
 
         {/* Main Content */}
         <div className={`flex-1 transition-all ${showFilter ? "ml-2" : ""}`}>
           {/* Top Search Bar */}
-          <div className="flex justify-between items-center bg-white p-4 rounded shadow mb-4">
+          <div className="flex flex-col md:flex-row justify-between items-center bg-white p-4 rounded-xl shadow-md mb-6 border border-gray-200 gap-4">
             <div className="flex items-center gap-2 w-full ">
               <span className="text-purple-600 hidden">📍 Calicut</span>
               <LocationAutocomplete
@@ -406,40 +406,55 @@ const ProviderSubcategoryPage: React.FC = () => {
             </div>
           </div>
           {/* Service Cards */}
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
               {subservices &&
                 subservices?.length > 0 &&
                 subservices?.map((card, idx) => (
                   <div
                     onClick={() => {
-                
-                 navigate("/ProviderDetails", { state: {card,providerServiceId:card.providerServiceId,providerImage:card.image,fullname:card.fullname,serviceImage:card.providerservImg,serviceId:mainServiceIdState,subcateId:card.subcategoryId }});
-                
-                }}
+                      navigate("/ProviderDetails", {
+                        state: {
+                          card,
+                          providerServiceId: card.providerServiceId,
+                          providerImage: card.image,
+                          fullname: card.fullname,
+                          serviceImage: card.providerservImg,
+                          serviceId: mainServiceIdState,
+                          subcateId: card.subcategoryId,
+                        },
+                      });
+                    }}
                     key={idx}
-                    className="bg-white rounded shadow p-4 cursor-pointer"
+                    className="bg-white rounded-2xl p-5 cursor-pointer transition-transform transform hover:-translate-y-1 shadow-[0_8px_20px_rgba(0,0,0,0.15)] hover:shadow-[0_12px_28px_rgba(0,0,0,0.2)]"
+
                   >
                     <img
                       src={card.image ? imageURL + "/" + card.image : noimg}
                       alt={card.image}
-                      className="w-full h-40 object-cover rounded"
+                      className="w-full h-48 object-cover rounded-xl"
                     />
-                    <div className="mt-2 flex justify-between items-center">
-                      <span className="text-yellow-500 font-medium">★ {4}</span>
-                      <span className="bg-purple-200 text-purple-800 px-2 py-1 rounded text-sm">
-                        ₹{100}
+                    <div className="mt-3 flex justify-between items-center">
+                      <span className="text-yellow-500 font-semibold text-sm">
+                        ★ 4.0
+                      </span>
+                      <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-medium shadow-sm">
+                        ₹100
                       </span>
                     </div>
-                    <h3 className="mt-2 font-semibold text-lg truncate text-gray-500">
-                      <span className="mt-2 font-semibold text-lg truncate text-purple-500">
-                        Service:
+
+                    <h3 className="mt-2 font-semibold text-base text-gray-800 truncate">
+                      <span className="text-purple-600 font-medium uppercase text-xs tracking-wide">
+                        Category: Service:
                       </span>{" "}
                       {card.name}
                     </h3>
 
-                    <h3 className="mt-2 font-semibold text-lg truncate text-gray-500">
-                      <span className="text-purple-500">Category:</span>{" "}
+                    <h3 className="mt-2 font-semibold text-base text-gray-800 truncate">
+                      <span className="text-purple-600 font-medium uppercase text-xs tracking-wide">
+                        Category:
+                      </span>{" "}
                       {card.subcategoryName || ""}
                       {/* {(card.subcategories ?? [])
       .map((sub: any) => sub.name ?? sub)
@@ -474,18 +489,11 @@ const ProviderSubcategoryPage: React.FC = () => {
                       )}
                     </div>
                     <div className="flex items-center justify-between mt-5">
-                      <button
-                        // onClick={() => handleBookNow(service)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded-md transition"
-                      >
+                      <button className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-5 py-2 rounded-full shadow-md transition-all duration-150">
                         Book Now
                       </button>
 
-                      <button
-                        // onClick={() => handleAddToCart(service)}
-                        className="text-blue-600 hover:text-blue-800 text-xl"
-                        title="Add to Cart"
-                      >
+                      <button className="text-blue-600 hover:text-blue-800 text-2xl transition-transform hover:scale-110">
                         🛒
                       </button>
                     </div>

@@ -18,6 +18,9 @@ import ProviderDetails from "../customer/pages/providerDetails/ProviderDetails";
 import Checkout from "../customer/pages/checkout/Checkout";
 import PaymentSuccess from "../customer/pages/payment/PaymentSuccess";
 import PaymentCancel from "../customer/pages/payment/PaymentCancel";
+
+import BookingList from "../customer/pages/bookings/BookingList";
+import BookingDetails from "../customer/pages/bookings/BookingDetails";
 const UserRoutes = () => {
   return (
     <div>
@@ -76,8 +79,14 @@ const UserRoutes = () => {
           <Route path="/subServices" element={<SubServices />} />
            <Route path="/providerDetails" element={<ProviderDetails />} />
            <Route path="/checkout" element={<Checkout />} />
+           {/* stripe callback route */}
           <Route path="/payment-success" element={<PaymentSuccess />} />
           <Route path="/payment-cancel" element={<PaymentCancel />} />
+          {/* end stripe callback route */}
+         <Route path="/bookings" element={<BookingList />} />
+         <Route path="/bookingDetails" element={<BookingDetails />} />
+
+
 
           
 
