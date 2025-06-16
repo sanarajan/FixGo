@@ -113,7 +113,6 @@ const AddStaff: React.FC<CustomersProps> = ({ userType }) => {
       setServicesData([]);
     }
   };
-  console.log(JSON.stringify(servicesData,null,2)+" servicel ist")
   // Fetch subcategories
 
   const toggleExpand = (serviceId: string) => {
@@ -272,7 +271,6 @@ const AddStaff: React.FC<CustomersProps> = ({ userType }) => {
     // for (let pair of formPayload.entries()) {
     //   console.log(pair[0], pair[1]);
     // }
-
     try {
       const response = await axiosClient.post(
         "/api/provider/addStaff",
@@ -304,6 +302,8 @@ const AddStaff: React.FC<CustomersProps> = ({ userType }) => {
     setLocationAddress(coords.address);
     setCoordinates({ lat: coords.lat, lng: coords.lng });
     setFormData((prev) => ({ ...prev, location: coords.address }));
+    console.log(coordinates?.lat,coords.address,"locations")
+
   };
   const googlekey = import.meta.env.VITE_GOOGLEAPI_KEY;
   return (

@@ -216,7 +216,6 @@ const ProfilePage = ({ userType }: profileProp) => {
         fieldsToValidate = ["location"];
         formPayload.delete("image");
         const finalLocation = locationAddress ?? formData.location;
-
         formPayload.append("location", finalLocation ?? "");
         formPayload.append("latitude", coordinates?.lat.toString() ?? "");
         formPayload.append("longitude", coordinates?.lng.toString() ?? "");
@@ -281,6 +280,7 @@ const ProfilePage = ({ userType }: profileProp) => {
         location: "",
       }));
     }
+    console.log(coords.lat+" profilepage loc function")
   };
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

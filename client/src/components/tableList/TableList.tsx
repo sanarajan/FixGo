@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import noImage from "../../assets/images/noimage.png";
@@ -8,7 +8,7 @@ import { getNestedValue } from "../../utils/NestedKeyHelper";
 interface Heading {
   key: string;
   label: string;
-  type?: "image" | "status" | "text";
+  type?: "image" | "status" | "text" | "button";
 }
 interface ActionConfigItem {
   type: "popup" | "page";
@@ -43,6 +43,8 @@ interface TableListProps<T> {
   extraProps?: Record<string, any>;
   refresh?: () => void; // NEW
   imagePath?: string;
+    handleStaffClick?: (providerId: string) => void;
+
 }
 
 interface ServiceData {
@@ -75,9 +77,9 @@ const TableList = <T extends Record<string, any>>({
   actionConfig,
   extraProps = {},
   refresh,
-  imagePath
+  imagePath,
+  handleStaffClick
 }: TableListProps<T>) => {
-
   const [popupState, setPopupState] = useState<PopupState<T> | null>(null);
 
   const [formData, setFormData] = useState({ name: "", status: "Active" });
@@ -129,14 +131,13 @@ const TableList = <T extends Record<string, any>>({
         (data as any)?.serviceId?.serviceName || data.serviceName;
       return serviceName;
     }
-    console.log(imagePath+" imagepath")
     if (heading.type === "image") {
       const API = import.meta.env.VITE_API_URL;
-      let imageuRL =  API + "/uploads/" + imagePath + value
-      if(!value){
-        imageuRL =`${API}/asset/noimage.png`
-      }    
-     
+      let imageuRL = API + "/uploads/" + imagePath + value;
+      if (!value) {
+        imageuRL = `${API}/asset/noimage.png`;
+      }
+
       return (
         <div className="flex justify-center">
           <img
@@ -158,6 +159,22 @@ const TableList = <T extends Record<string, any>>({
           {value === "Active" ? "Active" : "Inactive"}
         </span>
       );
+    }
+    if (heading.type === "button" && heading.key === "isStaffExist") {
+      const hasStaffs = data["isStaffExist"];
+      if (hasStaffs) {
+        return (
+          <button
+            className="bg-blue-500 text-white px-2 py-1 rounded text-xs"
+           onClick={() => handleStaffClick?.(data._id)}
+
+          >
+            Staffs
+          </button>
+        );
+      } else {
+        return <span className="text-gray-400 text-xs">No Staff</span>;
+      }
     }
 
     return <>{value}</>;
@@ -214,7 +231,6 @@ const TableList = <T extends Record<string, any>>({
                   </thead>
                   <tbody>
                     {data.map((item, idx) => (
-                  
                       <tr key={idx} className="border-t text-left">
                         {headings.map((rowdata) => (
                           <td key={rowdata.key} className="px-2 py-2">
