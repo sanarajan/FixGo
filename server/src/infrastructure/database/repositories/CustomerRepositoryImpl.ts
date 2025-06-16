@@ -27,6 +27,7 @@ export class CustomerRepositoryImpl implements ICustomerRepository {
     const skip = (page - 1) * limit;
     const providers = await UserModel.find({
       role: { $in: ["provider", "worker"] },
+      type:{$ne:"staff"}
     })
       .sort({ createdAt: -1 })
       .skip(skip)

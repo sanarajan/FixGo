@@ -48,20 +48,14 @@ export class ProviderEditUsecase {
         : "";
     }
     const createdUser = await this.userRepository.editStaff(adminId, user);
-
     if (adminId) {
       const existingAddress =
         await this.userRepository.getCurrentAddressByUserId(adminId);
-      console.log(
-        existingAddress.latitude +
-          " address longitude" +
-          existingAddress.longitude
-      );
+    
       const isSameLocation =
         existingAddress &&
         existingAddress?.latitude === coords.latitude &&
         existingAddress.longitude === coords.longitude;
-
       if (!isSameLocation) {
         const addressData: Partial<Iaddresses> = {
           _id: existingAddress?._id,
@@ -70,6 +64,10 @@ export class ProviderEditUsecase {
           createdBy: adminId,
           longitude: coords.longitude,
           latitude: coords.latitude,
+           geoLocation: {
+              type: "Point",
+              coordinates: [coords.latitude , coords.longitude], // <== Correct!
+          },
           current: true,
         };
         await this.userRepository.addAddress(addressData as Iaddresses);

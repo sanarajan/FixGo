@@ -205,8 +205,6 @@ export class UserRepositoryImpl implements UserRepository {
 
  async addAddress(addressData: Iaddresses): Promise<boolean | null> {
   try {
-    console.log('addAddress received longitude:', addressData.longitude, 'latitude:', addressData.latitude);
-
     if (
       typeof addressData.longitude !== 'number' ||
       typeof addressData.latitude !== 'number' ||

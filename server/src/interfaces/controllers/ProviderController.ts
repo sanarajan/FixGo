@@ -199,7 +199,13 @@ export const addStaff = async (req: Request, res: Response): Promise<void> => {
 
     const { location, services: _s, ...userData } = data;
     // console.log(userData.longitude+"--location cords-"+userData.latitude)
-    const coords = { latitude: data.latitude, longitude: data.longitude };
+    const latitude = userData.latitude ? parseFloat(userData.latitude) : null;
+const longitude = userData.longitude ? parseFloat(userData.longitude) : null;
+
+if (latitude === null || isNaN(latitude) || longitude === null || isNaN(longitude)) {
+  throw new Error("Latitude and Longitude are required and must be valid numbers.");
+}
+    const coords = { latitude: latitude, longitude: longitude };
     const dataUsecase = container.resolve(AddStaffUsecase);
     const addStaffdata = await dataUsecase.execute(
       userData,
@@ -402,7 +408,15 @@ export const providerEditAddress = async (req: Request, res: Response): Promise<
     const providerid =admin.id
     const data = { ...req.body };    
     const { location,  ...userData } = data;
-    const coords = { latitude: data?.latitude, longitude: data?.longitude };
+const latitude = data.latitude ? parseFloat(data.latitude) : null;
+const longitude = data.longitude ? parseFloat(data.longitude) : null;
+
+if (latitude === null || isNaN(latitude) || longitude === null || isNaN(longitude)) {
+  throw new Error("Latitude and Longitude are required and must be valid numbers.");
+}
+
+
+    const coords = { latitude: latitude, longitude: longitude };
     const editdata = container.resolve(ProviderAddressEditUsecase);
     const addStaffdata = await editdata.execute(
       userData,
