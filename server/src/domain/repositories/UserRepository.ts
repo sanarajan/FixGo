@@ -54,5 +54,10 @@ export interface UserRepository {
 
   showProvider(id: string): Promise<User | null>;
 fetchUserById(id:string):Promise<User | null>;
+providersStaffList(
+    page?: number,
+    limit?: number,
+    providerId?:string
+  ): Promise<{ data: User[]; totalCount: number }>;
 
 }

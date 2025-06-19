@@ -10,7 +10,8 @@ interface LocationState {
   otpEmail: string;
   returnUrl: string;
   otp:number,
-  userType:string
+  userType:string,
+  reg?:string
 }
 interface OtpInputBoxProps {
   title?: string;
@@ -33,7 +34,7 @@ const OtpLogin: React.FC<OtpInputBoxProps> = ({
   const [isSendDisabled, setIsSendDisabled] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { otpEmail = "", returnUrl = "", otp = "",userType="" } = (location.state || {}) as LocationState;
+  const { otpEmail = "", returnUrl = "", otp = "",userType="",reg="" } = (location.state || {}) as LocationState;
    const dispatch = useDispatch(); 
   const API = import.meta.env.VITE_API_URL;
   useEffect(() => {
@@ -56,7 +57,8 @@ const OtpLogin: React.FC<OtpInputBoxProps> = ({
       const response = await axios.post( `${API}/api/validateOtp`, {
         otpEmail,
         userOtp,
-        userType
+        userType,
+        reg:reg?reg:""
       }, { withCredentials: true });
       if (response.data.isValid) {
         const { accessToken } = response.data;

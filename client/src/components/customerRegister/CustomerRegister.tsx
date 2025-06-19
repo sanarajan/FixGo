@@ -65,7 +65,6 @@ const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
           }
         );
         if (response.status === 201) {
-          console.log(response)
           const userData = response.data.user.email
        
           let userType="customer"
@@ -84,7 +83,6 @@ const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
               toast.success("Register successfulll! Redirecting...", {
                 autoClose: 2000,
               });
-              console.log(window.location.pathname)
               let otpRedirect =window.location.pathname;
                  let pathname=window.location.pathname       
               if(otpRedirect==="/register"){
@@ -104,6 +102,7 @@ const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
                     otp,
                     userType:userRole,
                    returnUrl: otpRedirect, 
+                   reg:"reg"
                   },
                 });
               }, 2000);

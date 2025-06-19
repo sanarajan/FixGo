@@ -9,9 +9,9 @@ export const protectedRoute = (
 ) => {  
  console.log("admins chheck middleware token")
 
-    // const userRole=  req.headers['userrole'];
+    const userRole=  req.headers['userrole'];
 
-    // const refreshToken = req.cookies?.[`${userRole}_refreshToken`];
+    const refreshToken = req.cookies?.[`${userRole}_refreshToken`];
     const authHeader = req.headers['authorization'];
     const accessToken = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
 

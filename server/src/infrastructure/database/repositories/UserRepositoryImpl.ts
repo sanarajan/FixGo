@@ -346,6 +346,7 @@ export class UserRepositoryImpl implements UserRepository {
         image: 1,
         status: 1,
         role: 1,
+        verified:1,
         providerId: 1,
         username: 1,
         staffServices: 1,
@@ -616,4 +617,96 @@ async   fetchUserById
       providerId: user.providerId?.toString() ?? undefined,
     };
   }
+
+  async providersStaffList(
+  page: number = 1,
+  limit: number = 3,
+  providerId: string
+): Promise<StaffListResponse> {
+  console.log(providerId+" provid")
+  const skip = (page - 1) * limit;
+  const result = await UserModel.aggregate([
+    { $match: { type: "staff" ,providerId:new mongoose.Types.ObjectId(providerId)} },
+
+   
+
+    {
+      $lookup: {
+        from: "addresses",
+        let: { userId: "$_id" },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ["$userId", "$$userId"] },
+                  { $eq: ["$current", true] },
+                ],
+              },
+            },
+          },
+          {
+            $project: {
+              location: 1,
+              longitude: 1,
+              latitude: 1,
+              _id: 0,
+            },
+          },
+        ],
+        as: "address",
+      },
+    },
+    {
+      $addFields: {
+        currentAddress: { $arrayElemAt: ["$address", 0] },
+      },
+    },
+
+    {
+      $project: {
+        createdAt: 1,
+        _id: 1,
+        fullname: 1,
+        email: 1,
+        phone: 1,
+        image: 1,
+        status: 1,
+        role: 1,
+        providerId: 1,
+        username: 1,
+        verified:1,
+        "address.location": "$currentAddress.location",
+        "address.longitude": "$currentAddress.longitude",
+        "address.latitude": "$currentAddress.latitude",
+      
+      },
+    },
+
+    // ✅ Sort staff by their own createdAt in DESCENDING order (latest first)
+    {
+      $sort: { createdAt: -1 },
+    },
+
+    {
+      $facet: {
+        data: [{ $skip: skip }, { $limit: limit }],
+        totalCount: [{ $count: "count" }],
+      },
+    },
+  ]);
+
+ 
+
+    const staffs = result[0].data;
+    console.log(JSON.stringify(staffs,null,2)+" staffs")
+    const count = result[0].totalCount[0]?.count || 0;
+    return {
+      data: staffs.map((staff: any) => ({
+        ...staff,
+        _id: staff._id?.toString(),
+      })) as User[],
+      totalCount: count,
+    };
+  } 
 }
