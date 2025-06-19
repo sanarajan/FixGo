@@ -1,12 +1,19 @@
 import express from "express";
 const router = express.Router();
 import {
+ 
+  emailVerification,
+  
+} from "../controllers/AuthController";
+import {
   getAllCustomers,
   getAllProviders,
   customerView,
   providerView,
   blockUnblockProvider,
-  adminLogout
+  adminLogout,
+  providersStaffs,
+  validateStaffVerifyOtp
 } from "../controllers/AdminController";
 import {
   servicesList,
@@ -40,7 +47,10 @@ router.put("/editServiceSubcategory/:id", protectedRoute, editServiceSubcategory
 router.patch("/subcategoryBlock/:id", protectedRoute, subcategoryBlock);
 router.delete("/deleteSubcategory/:id", protectedRoute, deleteSubcategory);
 router.post("/adminLogout", protectedRoute, adminLogout);
+router.get("/providersStaffs", adminAuthProtect, providersStaffs);
+router.post("/verifyStaff",adminAuthProtect, emailVerification);
 
+router.post("/validateStaffVerifyOtp",adminAuthProtect, validateStaffVerifyOtp);
 
 
 

@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { container } from "tsyringe";
-
+import {UserModel} from "../../infrastructure/database/models/UserModel"
 import { RegisterUser } from "../../application/use-cases/RegisterUser";
 
 import { EmailVerifications } from "../../application/use-cases/EmailVerifications";
@@ -53,7 +53,6 @@ const login = async (
       sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-console.log('"here i set refreshtoken 7 days expire')
     res.status(200).json({
       accessToken: tokens.accessToken,
       user,
@@ -73,7 +72,6 @@ const refreshToken = async (
 ): Promise<void> => {
   try {
     const userRole= req.body.userRole
-    console.log(userRole+" role cjeck")
     const refreshToken = req.cookies[userRole+"_refreshToken"];
 
     if (!refreshToken) {    
@@ -181,12 +179,11 @@ const emailVerification = async (
 
 const validateOtp = async (req: Request, res: Response): Promise<void> => {
   try {
-    let { otpEmail, userOtp, userType } = req.body;
+    let { otpEmail, userOtp, userType,reg="" } = req.body;
     const email = otpEmail;
     const otpService = container.resolve<OtpService>("OtpService");
 
     const isValid = await otpService.validateOtp(email, userOtp);
-    console.log(isValid + " valid");
 
     if (!isValid) {
       res.status(400).json({ error: "Invalid or expired OTP" });
@@ -197,6 +194,10 @@ const validateOtp = async (req: Request, res: Response): Promise<void> => {
     if (!user) {
       res.status(404).json({ error: "User not found" });
       return;
+    }
+    if(reg==="reg"){
+      const verify =true
+      const verified =await UserModel.findByIdAndUpdate(user._id, { verified: verify });
     }
     const formattedUser = {
       ...user,

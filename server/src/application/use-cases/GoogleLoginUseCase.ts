@@ -30,6 +30,7 @@ export class GoogleLoginUseCase {
         password: "",
         role: userType,
         status: 'Active',
+        verified:true,
         image: picture,
         authProvider: "google",
         createdAt: new Date(),

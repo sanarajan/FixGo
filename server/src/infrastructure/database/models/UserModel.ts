@@ -26,6 +26,8 @@ const userSchema = new Schema({
   },
   // isApproved: { type: Boolean, default: false },
   image:{type:String,default: 'noimage.png'},
+   verified:{type:Boolean,default: false},
+
 
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
