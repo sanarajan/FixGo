@@ -21,7 +21,6 @@ export class ProviderAddressEditUsecase {
     user.role = "provider";
     user.providerId = adminId;
     user.status = "Active";
-
     if (adminId) {
       const existingAddress =
         await this.userRepository.getCurrentAddressByUserId(adminId);
@@ -37,7 +36,8 @@ export class ProviderAddressEditUsecase {
         id = existingAddress._id;
       }
 
-      if (!isSameLocation) {
+      if (!isSameLocation) {      console.log(" not same address")
+
         const addressData: Partial<Iaddresses> = {
           ...(id ? { _id: id } : {}),
           userId: adminId as string,
@@ -47,7 +47,7 @@ export class ProviderAddressEditUsecase {
           latitude: coords.latitude,
            geoLocation: {
               type: "Point",
-              coordinates: [coords.longitude, coords.latitude], // <== Correct!
+              coordinates: [coords.latitude , coords.longitude], // <== Correct!
           },
           current: true,
         };

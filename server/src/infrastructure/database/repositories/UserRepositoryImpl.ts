@@ -205,8 +205,6 @@ export class UserRepositoryImpl implements UserRepository {
 
  async addAddress(addressData: Iaddresses): Promise<boolean | null> {
   try {
-    console.log('addAddress received longitude:', addressData.longitude, 'latitude:', addressData.latitude);
-
     if (
       typeof addressData.longitude !== 'number' ||
       typeof addressData.latitude !== 'number' ||
@@ -281,11 +279,11 @@ export class UserRepositoryImpl implements UserRepository {
         as: "staffServices",
       },
     },
-    {
-      $match: {
-        staffServices: { $ne: [] }, // Keep only users with active staff services
-      },
-    },
+    // {
+    //   $match: {
+    //     staffServices: { $ne: [] }, // Keep only users with active staff services
+    //   },
+    // },
 
     {
       $lookup: {
@@ -394,6 +392,7 @@ export class UserRepositoryImpl implements UserRepository {
  
 
     const staffs = result[0].data;
+    console.log(JSON.stringify(staffs,null,2)+" staffs")
     const count = result[0].totalCount[0]?.count || 0;
     // console.log(JSON.stringify(staffs.services, null, 2));
     return {

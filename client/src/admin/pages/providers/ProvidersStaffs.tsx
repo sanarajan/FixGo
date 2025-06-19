@@ -9,7 +9,7 @@ import StatusConfirmPopup from "../../../components/popups/tools/StatusConfirmPo
 interface providerProps {
   userType: string;
 }
-const Providers = ({ userType }: providerProps) => {
+const ProvidersStaffs = ({ userType }: providerProps) => {
   const [users, setUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [busy, setBusy]             = useState(false);
@@ -94,4 +94,4 @@ const Providers = ({ userType }: providerProps) => {
   );
 };
 
-export default Providers;
+export default ProvidersStaffs;

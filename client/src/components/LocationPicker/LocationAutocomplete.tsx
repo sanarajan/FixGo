@@ -31,6 +31,7 @@ const LocationAutocomplete: React.FC<Props> = ({ onSelect, locationAddress, onCh
    
 
     autocomplete.addListener("place_changed", () => {
+      
       const place = autocomplete.getPlace();
       if (!place.geometry || !place.geometry.location) return;
 
@@ -39,14 +40,19 @@ const LocationAutocomplete: React.FC<Props> = ({ onSelect, locationAddress, onCh
       const address = place.formatted_address || "";
       onSelect({ lat, lng, address });
     });
+     // Cleanup listener on unmount
+    return () => {
+      window.google.maps.event.clearInstanceListeners(autocomplete);
+    };
   }, [isLoaded]);
 
   useEffect(() => {
-    if (inputRef.current && locationAddress) {
-      inputRef.current.value = locationAddress;
-    }
+    // if (inputRef.current && locationAddress) {
+    //   inputRef.current.value = locationAddress;
+    // }
 if (!locationAddress&&defaultCords &&defaultAddress&& onSelect && defaultCords?.lat !== undefined && defaultCords?.lng !== undefined) {
-       const lat =defaultCords?.lat;
+     console.log(" jango pettu")
+  const lat =defaultCords?.lat;
       const lng =defaultCords?.lng;
      const address =defaultAddress
       onSelect({ lat, lng, address });

@@ -22,6 +22,8 @@ import {ProviderEditUsecase} from "../../application/use-cases/provider/provider
 import {ProviderAddressEditUsecase} from "../../application/use-cases/provider/providerServices/ProviderAddressEditUsecase"
 import bcrypt from "bcrypt";
 import {ProviderResetPasswordUsecase} from "../../application/use-cases/provider/providerServices/ProviderResetPasswordUsecase"
+import { ServiceListForStaffUsecase } from "../../application/use-cases/provider/providerServices/ServiceListForStaffUsecase";
+
 interface CustomError extends Error {
   status?: number;
 }
@@ -158,6 +160,20 @@ export const groupedProviderServices = async (req: Request, res: Response) => {
     res.status(e.status || 400).json({ error: e.message });
   }
 };
+
+export const listingServiceForStaff = async (req: Request, res: Response) => {
+  try {
+    const admin = (req as any).user;
+    const adminId=admin.id
+    const id = req.params.id;
+    const servicesFetch = container.resolve(ServiceListForStaffUsecase);
+    const services = await servicesFetch.execute(adminId);
+    res.status(200).json({ services });
+  } catch (err) {
+    const e = err as CustomError;
+    res.status(e.status || 400).json({ error: e.message });
+  }
+};
 export const addStaff = async (req: Request, res: Response): Promise<void> => {
   try {
     const admin = (req as any).user;
@@ -183,7 +199,13 @@ export const addStaff = async (req: Request, res: Response): Promise<void> => {
 
     const { location, services: _s, ...userData } = data;
     // console.log(userData.longitude+"--location cords-"+userData.latitude)
-    const coords = { latitude: data.latitude, longitude: data.longitude };
+    const latitude = userData.latitude ? parseFloat(userData.latitude) : null;
+const longitude = userData.longitude ? parseFloat(userData.longitude) : null;
+
+if (latitude === null || isNaN(latitude) || longitude === null || isNaN(longitude)) {
+  throw new Error("Latitude and Longitude are required and must be valid numbers.");
+}
+    const coords = { latitude: latitude, longitude: longitude };
     const dataUsecase = container.resolve(AddStaffUsecase);
     const addStaffdata = await dataUsecase.execute(
       userData,
@@ -386,7 +408,15 @@ export const providerEditAddress = async (req: Request, res: Response): Promise<
     const providerid =admin.id
     const data = { ...req.body };    
     const { location,  ...userData } = data;
-    const coords = { latitude: data?.latitude, longitude: data?.longitude };
+const latitude = data.latitude ? parseFloat(data.latitude) : null;
+const longitude = data.longitude ? parseFloat(data.longitude) : null;
+
+if (latitude === null || isNaN(latitude) || longitude === null || isNaN(longitude)) {
+  throw new Error("Latitude and Longitude are required and must be valid numbers.");
+}
+
+
+    const coords = { latitude: latitude, longitude: longitude };
     const editdata = container.resolve(ProviderAddressEditUsecase);
     const addStaffdata = await editdata.execute(
       userData,

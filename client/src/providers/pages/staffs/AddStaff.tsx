@@ -96,8 +96,9 @@ const AddStaff: React.FC<CustomersProps> = ({ userType }) => {
   };
   const fetchServiceAndSubcategories = async () => {
     try {
-      const response = await axiosClient.get(
-        "/api/provider/groupedProviderServices",
+     
+       const response = await axiosClient.get(
+        "/api/provider/listingServiceForStaff",
         {
           headers: {
             userRole: userType,
@@ -233,11 +234,11 @@ const AddStaff: React.FC<CustomersProps> = ({ userType }) => {
       toast.error(errors.location);
       return;
     }
-    if (!serviceValid) {
-      setFormErrors(errors);
-      toast.error("Please select services");
-      return;
-    }
+    // if (!serviceValid) {
+    //   setFormErrors(errors);
+    //   toast.error("Please select services");
+    //   return;
+    // }
     if (!finalLocation) {
       toast.error("Location is required");
       return;
@@ -266,11 +267,10 @@ const AddStaff: React.FC<CustomersProps> = ({ userType }) => {
     formPayload.append("latitude", coordinates?.lat.toString() ?? "");
     formPayload.append("longitude", coordinates?.lng.toString() ?? "");
     if (formData.image) formPayload.append("image", formData.image);
-    formPayload.append("services", JSON.stringify(selectedServices));
+    // formPayload.append("services", JSON.stringify(selectedServices));
     // for (let pair of formPayload.entries()) {
     //   console.log(pair[0], pair[1]);
     // }
-
     try {
       const response = await axiosClient.post(
         "/api/provider/addStaff",
@@ -302,6 +302,8 @@ const AddStaff: React.FC<CustomersProps> = ({ userType }) => {
     setLocationAddress(coords.address);
     setCoordinates({ lat: coords.lat, lng: coords.lng });
     setFormData((prev) => ({ ...prev, location: coords.address }));
+    console.log(coordinates?.lat,coords.address,"locations")
+
   };
   const googlekey = import.meta.env.VITE_GOOGLEAPI_KEY;
   return (

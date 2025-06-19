@@ -2,18 +2,18 @@ import React, { useState } from "react";
 import CustomerLayoutWithSidebar from "../../../components/customerLayout/CustomerLayoutWithSidebar";
 import { useLocation } from "react-router-dom";
 import { IOrder } from "../../../interface/OrderInterface";
-import {getStatusStyle} from "../../../utils/StatusHelper"
+import { getStatusStyle } from "../../../utils/StatusHelper";
 
 const BookingDetails = () => {
   const location = useLocation();
   const bookingDetail = location.state.booking;
   const [bookings, setBooking] = useState<IOrder>(bookingDetail);
- const imagePath = "providerServices/";
+  const imagePath = "providerServices/";
   let imageURL = "";
   const API = import.meta.env.VITE_API_URL;
 
   imageURL = `${API}/uploads/${imagePath}`;
-    let noimg = "noimage.png";
+  let noimg = "noimage.png";
 
   return (
     <CustomerLayoutWithSidebar>
@@ -54,18 +54,19 @@ const BookingDetails = () => {
                     </div>
                     <div className="flex flex-col items-end">
                       <img
-                    
-                        src=  {
-                    bookings.providerServiceId?.image
-                      ? imageURL + bookings.providerServiceId.image
-                      : "https://via.placeholder.com/120x100?text=Booking"
-                  }
+                        src={
+                          bookings.providerServiceId?.image
+                            ? imageURL + bookings.providerServiceId.image
+                            : "https://via.placeholder.com/120x100?text=Booking"
+                        }
                         alt="Service"
                         className="w-32 h-20 rounded-md object-cover"
                       />
-                      <span className={` text-white text-xs px-3 py-1 rounded-full mt-2 ${getStatusStyle(
-                                            bookings.bookingStatus || "Pending" // fallback if status is undefined
-                                          )}`}>
+                      <span
+                        className={` text-white text-xs px-3 py-1 rounded-full mt-2 ${getStatusStyle(
+                          bookings.bookingStatus || "Pending" // fallback if status is undefined
+                        )}`}
+                      >
                         {bookings?.bookingStatus}
                       </span>
                     </div>
@@ -81,12 +82,11 @@ const BookingDetails = () => {
                   </h3>
                   <div className="flex items-center gap-4">
                     <img
-                   
-                      src=  {
-                    bookings.providerServiceId?.image
-                      ? imageURL + bookings.customerId.image
-                      : "https://via.placeholder.com/120x100?text=Booking"
-                  }
+                      src={
+                        bookings.providerServiceId?.image
+                          ? imageURL + bookings.customerId.image
+                          : "https://via.placeholder.com/120x100?text=Booking"
+                      }
                       alt="Customer"
                       className="w-20 h-20 rounded-full"
                     />
@@ -113,12 +113,11 @@ const BookingDetails = () => {
                   </h3>
                   <div className="flex items-center gap-4">
                     <img
-                     
-                      src=  {
-                    bookings.providerServiceId?.image
-                      ? imageURL + bookings.providerId?.image 
-                      : imageURL + noimg
-                  }
+                      src={
+                        bookings.providerServiceId?.image
+                          ? imageURL + bookings.providerId?.image
+                          : imageURL + noimg
+                      }
                       alt="Provider"
                       className="w-20 h-20 rounded-full"
                     />
@@ -178,10 +177,12 @@ const BookingDetails = () => {
                       <span>Total Amount</span>
                       <span>₹{bookings?.amount?.remaining}</span>
                     </div>
-                     <div className="flex justify-between text-sm">
-    <span>Payment Status</span>
-    <span className="text-red-600">{bookings?.paymentStatus}</span>
-  </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Payment Status</span>
+                      <span className="text-red-600">
+                        {bookings?.paymentStatus}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>

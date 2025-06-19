@@ -100,7 +100,7 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
   const fetchServiceAndSubcategories = async () => {
     try {
       const response = await axiosClient.get(
-        "/api/provider/groupedProviderServices",
+        "/api/provider/listingServiceForStaff",
         {
           headers: {
             userRole: userType,
@@ -293,7 +293,7 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
     lat: number;
     lng: number;
     address: string;
-  }) => {
+  }) => {console.log("hfgfgj")
     setLocationAddress(coords.address);
     setCoordinates({ lat: coords.lat, lng: coords.lng });
     setFormData((prev) => ({ ...prev, location: coords.address }));

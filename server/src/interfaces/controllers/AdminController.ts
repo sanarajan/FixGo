@@ -8,6 +8,7 @@ import { ViewProvider } from "../../application/use-cases/ViewProvider";
 import { UserRepositoryImpl } from "../../infrastructure/database/repositories/UserRepositoryImpl";
 import { BlockUnblockProviderUseCase } from "../../application/use-cases/admin/lists/BlockUnblockProviderUseCase";
 import { UserModel } from "../../infrastructure/database/models/UserModel";
+import  {  Document, Types } from 'mongoose';
 
 interface CustomError extends Error {
   status?: number;
@@ -42,21 +43,52 @@ export const getAllProviders = async (
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
+
     const listProviders = container.resolve(ListProviders);
-    const customers = await listProviders.execute(page, limit);
+    const providers = await listProviders.execute(page, limit);
+
     const totalCount = await UserModel.countDocuments({
       role: { $in: ["provider", "worker"] },
+      type:{$ne:"staff"}
     });
 
+ const providerIds = providers
+  .map((p) => p._id)
+  .filter((id): id is string => !!id)
+  .map((id) => new Types.ObjectId(id));
+console.log(providerIds+ "providers")
+
+    const staffsGrouped = await UserModel.aggregate([
+      { $match: { type: "staff", providerId: { $in: providerIds } } },
+      { $group: { _id: "$providerId", count: { $sum: 1 } } },
+    ]);
+console.log(staffsGrouped+ "staffs")
+
+    const staffMap = Object.fromEntries(
+      staffsGrouped.map((s) => [s._id.toString(), s.count])
+    );
+
+    const providersWithStaffInfo = providers.map((provider) => ({
+      ...provider,
+      isStaffExist: provider._id
+        ? !!staffMap[provider._id.toString()]
+        : false,
+    }));
+
     const totalPages = Math.ceil(totalCount / limit);
-    res
-      .status(200)
-      .json({ customers, totalPages, totalCount, currentPage: page });
+
+    res.status(200).json({
+      customers: providersWithStaffInfo,
+      totalPages,
+      totalCount,
+      currentPage: page,
+    });
   } catch (err) {
     console.error("Error fetching customers:", err);
     res.status(500).json({ error: "Failed to fetch customers" });
   }
 };
+
 export const customerView = async (
   req: Request,
   res: Response,

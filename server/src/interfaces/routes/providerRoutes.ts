@@ -24,7 +24,8 @@ import {
     providerProfile,
     providerEditPersonal,
     providerEditAddress,
-    providerPasswordReset
+    providerPasswordReset,
+    listingServiceForStaff
 } from "../controllers/ProviderController";
 import {bookingList} from "../controllers/OrderController"
 import { protectedRoute } from "../../middlewares/authMiddleware";
@@ -40,6 +41,9 @@ router.put("/providerUpdateService/:id", protectedRoute, upload.single("image"),
 router.delete("/deleteProviderService/:id", protectedRoute, deleteProviderService);
 router.patch("/providerServiceBlockUnblock/:id", protectedRoute, providerServiceBlockUnblock);
 router.get("/groupedProviderServices", protectedRoute, groupedProviderServices);
+router.get("/listingServiceForStaff", protectedRoute, listingServiceForStaff);
+
+
 router.post("/addStaff", protectedRoute,upload.single("image"), addStaff);
 router.get("/staffList", protectedRoute, staffList);
 router.patch("/editStaff/:id", protectedRoute, upload.single("image"),editStaff);
