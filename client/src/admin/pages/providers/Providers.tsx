@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import AdminLayout from "../../../components/AdminLayout/AdminLayout";
 import TableList from "../../../components/tableList/TableList";
-import axiosClient from "../../../api/axiosClient";
+import adminAxiosClient from "../../../api/adminAxiosClient";
 import { User } from "../../../types/User";
 import AddEditService from "../../../components/popups/services/AddEditService";
 import StatusConfirmPopup from "../../../components/popups/tools/StatusConfirmPopup";
+import { useNavigate } from "react-router-dom";
 
 interface providerProps {
   userType: string;
@@ -16,7 +17,7 @@ const Providers = ({ userType }: providerProps) => {
   const [page, setPage]             = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totCount,setTotCount]      = useState(0);
-
+const navigate = useNavigate()
   useEffect(() => {
     fetchUsers();
   }, [page]);
@@ -24,7 +25,7 @@ const Providers = ({ userType }: providerProps) => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axiosClient.get(`/api/admin/providers?page=${page}&limit=3`, {
+      const response = await adminAxiosClient.get(`/api/admin/providers?page=${page}&limit=3`, {
         headers: {
           userRole: userType,
         },
@@ -50,8 +51,11 @@ const Providers = ({ userType }: providerProps) => {
   : users;
   }
   const handleStaffClick = (providerId: string) => {
-  console.log("Staff clicked for", providerId);
-  // You can navigate or open popup here
+  navigate("/admin/ProvidersStaff", {
+                        state: {
+                          providerId
+                        },
+                      });
 };
   return (
     <AdminLayout>

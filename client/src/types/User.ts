@@ -8,6 +8,7 @@ export interface User {
     password: string;
     role: string;
     providerId?: string;
+    verified?:boolean;
     isActive: boolean;
     createdAt?: Date;
     updatedAt?: Date;

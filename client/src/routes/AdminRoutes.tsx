@@ -12,7 +12,7 @@ import { UserRole } from "../components/Login/Login";
 import ProtectedRoute from "../components/ProtectedRoute";
 import ServiceSubcategories from "../admin/pages/serviceManagement/ServiceSubcategories";
 import AdminProfile from "../admin/pages/profile/AdminProfile"
-
+import ProvidersStaffs from "../admin/pages/providers/ProvidersStaffs"
 const AdminRoutes = () => {
   return (
     <div>
@@ -54,6 +54,11 @@ const AdminRoutes = () => {
           path="/profile"
           element={<AdminProfile userType={"admin"} />}
         />
+         <Route
+          path="/providersStaff"
+          element={<ProvidersStaffs userType={"admin"} />}
+        />
+        
       </Routes>
     </div>
   );

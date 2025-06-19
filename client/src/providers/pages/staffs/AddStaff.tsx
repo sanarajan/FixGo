@@ -381,7 +381,7 @@ const AddStaff: React.FC<CustomersProps> = ({ userType }) => {
         </div>
 
         {/* === Section 2: Manage Services === */}
-        <div className="p-5 rounded-md border border-gray-300 bg-[#F9F9FC] space-y-4">
+        {/* <div className="p-5 rounded-md border border-gray-300 bg-[#F9F9FC] space-y-4">
           <h2 className="text-2xl font-bold text-[#5A52A4]">
             Expertise Services
           </h2>
@@ -447,7 +447,7 @@ const AddStaff: React.FC<CustomersProps> = ({ userType }) => {
               )}
             </div>
           ))}
-        </div>
+        </div> */}
 
         {/* === Section 3: Address === */}
         <div className="p-5 rounded-md border border-gray-300 bg-[#F9F9FC]">

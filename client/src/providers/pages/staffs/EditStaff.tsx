@@ -37,7 +37,7 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
   });
   const location = useLocation();
   const staffItem = location.state;
-
+ const verified = staffItem.verified
   const [selectedServices, setSelectedServices] = useState<{
     [key: string]: string[];
   }>({});
@@ -51,9 +51,10 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
     []
   );
   const [locationAddress, setLocationAddress] = useState<string | null>(null);
-
+const [isStaffVerified,setIsStaffVerified] = useState<boolean>(verified)
   useEffect(() => {
-    fetchServiceAndSubcategories();
+     if(isStaffVerified)
+       fetchServiceAndSubcategories();
     const resolvedLocation =
       Array.isArray(staffItem.address) && staffItem.address.length
         ? staffItem.address[0].location
@@ -69,7 +70,8 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
         image: staffItem.image || "noimage.png",
         role: staffItem.role || "provider",
       });
-
+      //if staff verified then add service
+  if(isStaffVerified){
       const initialSelectedServices: { [key: string]: string[] } = {};
       if (Array.isArray(staffItem.staffServices)) {
         staffItem.staffServices.forEach((item: any) => {
@@ -83,15 +85,15 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
             }
           }
         });
-      }
+      }      
 
+      setSelectedServices(initialSelectedServices);
+      setExpandedServices(Object.keys(initialSelectedServices));
+    }
       setCoordinates({
         lat: staffItem.address[0].latitude,
         lng: staffItem.address[0].longitude,
       });
-
-      setSelectedServices(initialSelectedServices);
-      setExpandedServices(Object.keys(initialSelectedServices));
     }
   }, []);
 
@@ -229,14 +231,17 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
 
   const handleSubmit = async () => {
     const { isValid, errors } = validateForm(formData);
-    const serviceValid = isServiceSelectionValid(selectedServices);
+    let serviceValid
+    if(isStaffVerified){
+     serviceValid = isServiceSelectionValid(selectedServices);
+    }
     const finalLocation = locationAddress ?? formData.location;
     if (!isValid) {
       setFormErrors(errors);
       toast.error(errors.email);
       return;
     }
-    if (!serviceValid) {
+    if (!serviceValid &&isStaffVerified) {
       setFormErrors(errors);
       toast.error("Please select services");
       return;
@@ -263,7 +268,8 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
     formPayload.append("longitude", coordinates?.lng.toString() ?? "");
 
     if (formData.image) formPayload.append("image", formData.image);
-    if (changeService) {
+    if (changeService &&isStaffVerified) {
+      console.log(JSON.stringify(selectedServices)+"  stringify")
       formPayload.append("services", JSON.stringify(selectedServices));
       formPayload.append("oldServices", JSON.stringify(orgService));
     }
@@ -384,6 +390,7 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
         </div>
 
         {/* === Section 2: Manage Services === */}
+        { isStaffVerified&&(
         <div className="p-5 rounded-md border border-gray-300 bg-[#F9F9FC] space-y-4">
           <h2 className="text-2xl font-bold text-[#5A52A4]">
             Expertise Services
@@ -451,6 +458,7 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
             </div>
           ))}
         </div>
+        )}
 
         {/* === Section 3: Address === */}
         <div className="p-5 rounded-md border border-gray-300 bg-[#F9F9FC]">

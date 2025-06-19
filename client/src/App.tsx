@@ -41,7 +41,6 @@ const isLogedin = getAccessTokenByUserRole(userType)
   }
 }, [userType, user, adminUser, providerUser]);
   const dispatch = useDispatch();
-console.log(providerUser,"provider user")
 const fetchUserData = async () => {
     try {
       let res =null
