@@ -6,11 +6,13 @@ import { IproviderServices } from "../../../types/ProviderServices";
 import AddProviderService from "../../../components/popups/providerService/AddProviderService";
 import DeleteConfirmPopup from "../../../components/popups/tools/DeleteConfirmPopup";
 import StatusConfirmPopup from "../../../components/popups/tools/StatusConfirmPopup";
-
+import { useSelector } from "react-redux";
+import { RootState } from "../../../redux/Store";
 interface providerProps {
   userType: string;
 }
 const ProviderServices = ({ userType }: providerProps) => {
+  const user = useSelector((state: RootState) => state.provider.user);
   const [services, setServices] = useState<IproviderServices[]>([]);
   const [subcategories, setSubcategories] = useState<IproviderServices[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -18,6 +20,7 @@ const ProviderServices = ({ userType }: providerProps) => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totCount, setTotCount] = useState(0);
+  const [isCompany,setIscompany] =useState<boolean|null>(user?.isCompany)
   useEffect(() => {
     fetchServices();
   }, [page]);
@@ -53,6 +56,32 @@ const ProviderServices = ({ userType }: providerProps) => {
         )
       : services;
   }
+type ActionType = {
+  type: string;
+  component: React.FC<any>;
+  params?: { api: string };
+};
+
+// Declare actionConfig as a dynamic object
+const actionConfig: Record<string, ActionType> = {
+  edit: { type: "popup", component: AddProviderService },
+  view: { type: "popup", component: AddProviderService },
+  delete: {
+    type: "popup",
+    component: DeleteConfirmPopup,
+    params: { api: "/api/provider/deleteProviderService" },
+  },
+  blockUnblock: {
+    type: "popup",
+    component: StatusConfirmPopup,
+    params: { api: "/api/provider/providerServiceBlockUnblock" },
+  },
+};
+
+// Conditionally add "add" key
+if (!isCompany) {
+  actionConfig["add"] = { type: "popup", component: AddProviderService };
+}
 
   return (
     <ProviderLayout>
@@ -74,22 +103,7 @@ const ProviderServices = ({ userType }: providerProps) => {
         ]}
         showSubcategory={false}
         showActions={["view", "edit", "delete", "blockUnblock"]}
-        actionConfig={{
-          add: { type: "popup", component: AddProviderService },
-          edit: { type: "popup", component: AddProviderService },
-          view: { type: "popup", component: AddProviderService },
-
-          delete: {
-            type: "popup",
-            component: DeleteConfirmPopup,
-            params: { api: "/api/provider/deleteProviderService" },
-          },
-          blockUnblock: {
-            type: "popup",
-            component: StatusConfirmPopup,
-            params: { api: "/api/provider/providerServiceBlockUnblock" },
-          },
-        }}
+        actionConfig={actionConfig}
         refresh={refresh}
         imagePath="providerServices/"
         

@@ -18,28 +18,29 @@ type MenuItem = {
   icon: ReactNode;
   path: string;
 };
-const menuItems: MenuItem[] = [
-  {
-    label: "DASHBOARD",
-    icon: <FaTachometerAlt />,
-    path: "/provider/dashboard",
-  },
+
+
+interface AdminSidebarProps {
+  onCollapse: () => void; //
+}
+const Sidebar: React.FC<AdminSidebarProps> = ({ onCollapse }) => {
+  
+  const storedUser = localStorage.getItem("provider_user");
+  const userData = storedUser ? JSON.parse(storedUser) : null;
+  const user = useSelector((state: RootState) => state.provider.user);
+  const menuItems: MenuItem[] = [
+  { label: "DASHBOARD", icon: <FaTachometerAlt />, path: "/provider/dashboard" },
   { label: "PROFILE", icon: <FaUser />, path: "/provider/profile" },
-  // { label: 'PROVIDERS', icon: <FaUsers />, path: '/provider/providers' },
   { label: "CUSTOMERS", icon: <FaUsers />, path: "/provider/customers" },
-  { label: "STAFFS", icon: <FaUsers />, path: "/provider/staffs" },
+  // Conditionally include "STAFFS"
+  ...(user?.isCompany
+    ? [{ label: "STAFFS", icon: <FaUsers />, path: "/provider/staffs" }]
+    : []),
   { label: "SERVICES", icon: <FaCogs />, path: "/provider/services" },
   { label: "BOOKINGS", icon: <FaBox />, path: "/provider/bookings" },
   { label: "PAYMENTS", icon: <FaMoneyBill />, path: "/payments" },
   { label: "REPORT", icon: <FaChartBar />, path: "/report" },
 ];
-interface AdminSidebarProps {
-  onCollapse: () => void; //
-}
-const Sidebar: React.FC<AdminSidebarProps> = ({ onCollapse }) => {
-  const storedUser = localStorage.getItem("provider_user");
-  const userData = storedUser ? JSON.parse(storedUser) : null;
-  const user = useSelector((state: RootState) => state.provider.user);
   const imagePath = "providerServices/";
   const API = import.meta.env.VITE_API_URL;
 

@@ -18,6 +18,7 @@ type SignUpFormData = {
   password: string;
   confirmPassword: string;
   role: string;
+   isCompany: boolean; 
 };
 interface OtpResponse {
   otp: number;
@@ -30,7 +31,8 @@ const ProviderRegister: React.FC<SignUpProps> = ({ imageSrc }) => {
     phone: "",
     password: "",
     confirmPassword: "",
-    role: "", // default
+    role: "", 
+     isCompany: false
   });
   const [errors, setErrors] = useState<
     Partial<Record<keyof SignUpFormData, string>>
@@ -42,19 +44,27 @@ const ProviderRegister: React.FC<SignUpProps> = ({ imageSrc }) => {
 
   const navigate = useNavigate();
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    const updatedForm = { ...formData, [name]: value };
-    setFormData(updatedForm);
-    // Clear error or update it immediately
-    const error = validateField(
-      name as keyof SignUpFormData,
-      value,
-      updatedForm
-    );
-    setErrors((prev) => ({ ...prev, [name]: error }));
+  e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+) => {
+  const { name, value } = e.target;
+
+  const updatedForm = {
+    ...formData,
+    [name]: value,
+    ...(name === "role" && {
+      isCompany: value === "provider", // set isCompany automatically
+    }),
   };
+
+  setFormData(updatedForm);
+
+  // Skip validation for `isCompany`
+  if (name !== "isCompany") {
+    const error = validateField(name as keyof SignUpFormData, value, updatedForm);
+    setErrors((prev) => ({ ...prev, [name]: error }));
+  }
+};
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,7 +75,7 @@ const ProviderRegister: React.FC<SignUpProps> = ({ imageSrc }) => {
         setLoading(true);
         toast.dismiss();
         const API = import.meta.env.VITE_API_URL;
-        const response = await axios.post(`${API}/api/register`, formData, {
+        const response = await axios.post(`${API}/api/register`, {...formData,role:"provider"}, {
           withCredentials: true,
         });
         if (response.status === 201) {
@@ -109,6 +119,7 @@ const ProviderRegister: React.FC<SignUpProps> = ({ imageSrc }) => {
                     otp,
                     userType: userRole,
                     returnUrl: otpRedirect,
+                    reg:"reg"
                   },
                 });
               }, 2000);

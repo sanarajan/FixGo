@@ -8,6 +8,7 @@ interface SignUpFormData {
   password: string;
   confirmPassword: string;
   role: string;
+  isCompany: boolean; 
 }
 
 interface ValidationResult {
