@@ -10,7 +10,7 @@ import { LoadScript } from "@react-google-maps/api";
 import LocationAutocomplete from "../../../components/LocationPicker/LocationAutocomplete";
 import { useLocation } from "react-router-dom";
 import { hasDataChanged } from "./ValidationEditstaff";
-
+import StaffServices from "../../../components/popups/staffs/StaffServices"
 type Subcategory = {
   _id: string;
   name: string;
@@ -34,6 +34,7 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
     location: "",
     image: null as File | null,
     role: "provider",
+    verified:null
   });
   const location = useLocation();
   const staffItem = location.state;
@@ -52,6 +53,8 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
   );
   const [locationAddress, setLocationAddress] = useState<string | null>(null);
 const [isStaffVerified,setIsStaffVerified] = useState<boolean>(verified)
+const [showServiceModal, setShowServiceModal] = useState(false);
+
   useEffect(() => {
      if(isStaffVerified)
        fetchServiceAndSubcategories();
@@ -69,6 +72,7 @@ const [isStaffVerified,setIsStaffVerified] = useState<boolean>(verified)
         location: staffItem.address.location || resolvedLocation || "",
         image: staffItem.image || "noimage.png",
         role: staffItem.role || "provider",
+        verified:staffItem.verified
       });
       //if staff verified then add service
   if(isStaffVerified){
@@ -169,6 +173,7 @@ const [isStaffVerified,setIsStaffVerified] = useState<boolean>(verified)
 
       return newSelected;
     });
+  
   };
 
   const areAllServicesSelected = () => {
@@ -233,6 +238,7 @@ const [isStaffVerified,setIsStaffVerified] = useState<boolean>(verified)
     const { isValid, errors } = validateForm(formData);
     let serviceValid
     if(isStaffVerified){
+    if( formData.verified){
      serviceValid = isServiceSelectionValid(selectedServices);
     }
     const finalLocation = locationAddress ?? formData.location;
@@ -241,7 +247,8 @@ const [isStaffVerified,setIsStaffVerified] = useState<boolean>(verified)
       toast.error(errors.email);
       return;
     }
-    if (!serviceValid &&isStaffVerified) {
+    // if (!serviceValid &&isStaffVerified) {
+    if (!serviceValid  && formData.verified) {
       setFormErrors(errors);
       toast.error("Please select services");
       return;
@@ -268,8 +275,9 @@ const [isStaffVerified,setIsStaffVerified] = useState<boolean>(verified)
     formPayload.append("longitude", coordinates?.lng.toString() ?? "");
 
     if (formData.image) formPayload.append("image", formData.image);
-    if (changeService &&isStaffVerified) {
-      console.log(JSON.stringify(selectedServices)+"  stringify")
+    // if (changeService &&isStaffVerified) {
+    //   console.log(JSON.stringify(selectedServices)+"  stringify")
+    if (changeService && formData.verified) {
       formPayload.append("services", JSON.stringify(selectedServices));
       formPayload.append("oldServices", JSON.stringify(orgService));
     }
@@ -293,6 +301,7 @@ const [isStaffVerified,setIsStaffVerified] = useState<boolean>(verified)
       console.error("Error updating staff:", err);
       toast.error("An error occurred while updating staff");
     }
+  }
   };
 
   const handleLocationSelect = (coords: {
@@ -319,6 +328,7 @@ const [isStaffVerified,setIsStaffVerified] = useState<boolean>(verified)
   } else {
     imageURL = "noimage.png";
   }
+
 
   return (
     <ProviderLayout>
@@ -395,7 +405,30 @@ const [isStaffVerified,setIsStaffVerified] = useState<boolean>(verified)
           <h2 className="text-2xl font-bold text-[#5A52A4]">
             Expertise Services
           </h2>
-          <div>
+         {formData.verified && (
+  <button
+    onClick={() => setShowServiceModal(true)}
+    className="bg-[#5A52A4] text-white px-4 py-2 rounded-full font-medium shadow hover:bg-[#4a479c]"
+  >
+    + Add Service
+  </button>
+)}
+<StaffServices
+  servicesData={servicesData}
+  selectedServices={selectedServices}
+  expandedServices={expandedServices}
+  show={showServiceModal}
+  onClose={() => setShowServiceModal(false)}
+  onToggleExpand={toggleExpand}
+  onServiceToggle={handleServiceToggle}
+  onSubcategoryToggle={handleSubcategoryToggle}
+  areAllServicesSelected={areAllServicesSelected}
+  handleSelectAll={handleSelectAll}
+/>
+
+
+
+          {/* <div>
             <label className="font-semibold mr-2">Select All Services</label>
             <input
               type="checkbox"
@@ -456,7 +489,7 @@ const [isStaffVerified,setIsStaffVerified] = useState<boolean>(verified)
                 </div>
               )}
             </div>
-          ))}
+          ))} */}
         </div>
         )}
 
@@ -505,7 +538,11 @@ const [isStaffVerified,setIsStaffVerified] = useState<boolean>(verified)
           </button>
         </div>
       </div>
+ 
+
+
     </ProviderLayout>
   );
-};
+}
+
 export default EditStaff;
