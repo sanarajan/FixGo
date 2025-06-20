@@ -13,6 +13,7 @@ export interface User {
   status: string;
   authProvider: 'google' | 'local';
   type?: 'staff' | 'worker' | 'provider' | null;
+  isCompany?:boolean;
   verified?:boolean;
   createdAt?: Date;
   updatedAt?: Date;
