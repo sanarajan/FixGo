@@ -70,6 +70,8 @@ const StaffsList = ({ userType }: CustomersProps) => {
           { key: "email", label: "Email" },
           { key: "phone", label: "Mobile" },
           { key: "status", label: "Status", type: "status" },
+                    { key: "isStaffExist", label: "Staffs", type: "button" },       
+
           //   { key: 'companyName', label: 'Location' },
         ]}
         showSubcategory={false}

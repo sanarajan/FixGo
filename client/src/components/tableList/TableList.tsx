@@ -8,7 +8,8 @@ import { getNestedValue } from "../../utils/NestedKeyHelper";
 interface Heading {
   key: string;
   label: string;
-  type?: "image" | "status" | "text" | "button";
+  type?: "image" | "status" | "text" | "button"| "verified";
+  
 }
 interface ActionConfigItem {
   type: "popup" | "page";
@@ -31,7 +32,7 @@ interface TableListProps<T> {
   // allservices?:T[]
   headings: Heading[];
   showSubcategory: boolean;
-  showActions?: ("view" | "edit" | "delete" | "blockUnblock")[];
+  showActions?: ("view" | "edit" | "delete" | "blockUnblock"|"verify")[];
 
   actionConfig: {
     add?: ActionConfigItem;
@@ -39,6 +40,7 @@ interface TableListProps<T> {
     view?: ActionConfigItem;
     blockUnblock?: ActionConfigItem;
     delete?: ActionConfigItem; // ← NEW
+    verify?:ActionConfigItem
   };
   extraProps?: Record<string, any>;
   refresh?: () => void; // NEW
@@ -53,7 +55,7 @@ interface ServiceData {
   [key: string]: any;
 }
 
-type PopupType = "add" | "edit" | "view" | "blockUnblock" | "delete";
+type PopupType = "add" | "edit" | "view" | "blockUnblock" | "delete"|"verify";
 
 interface PopupState<T> {
   type: PopupType;
@@ -80,12 +82,14 @@ const TableList = <T extends Record<string, any>>({
   imagePath,
   handleStaffClick
 }: TableListProps<T>) => {
+ 
+
   const [popupState, setPopupState] = useState<PopupState<T> | null>(null);
 
   const [formData, setFormData] = useState({ name: "", status: "Active" });
   const navigate = useNavigate();
   const handleAction = (
-    action: "add" | "edit" | "view" | "blockUnblock" | "delete",
+    action: "add" | "edit" | "view" | "blockUnblock" | "delete" |"verify",
     item?: T
   ) => {
     const config = actionConfig[action];
@@ -108,6 +112,7 @@ const TableList = <T extends Record<string, any>>({
     const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
       setPage(value);
     };
+   
     return (
       <Popup
         imagePath={imagePath}
@@ -176,6 +181,29 @@ const TableList = <T extends Record<string, any>>({
         return <span className="text-gray-400 text-xs">No Staff</span>;
       }
     }
+if (heading.type === "verified") {
+   const isVerified =
+    value === true ||
+    value === "true" || // string version
+    value === "Verified" ||
+    value === 1 ||
+    value === "1";
+
+  return (
+    <span
+      onClick={() => {
+        if (!isVerified) {
+          handleAction("verify", data); // or call your verify function
+        }
+      }}
+      className={`px-2 py-1 text-xs font-semibold rounded-full cursor-pointer ${
+        isVerified ? "bg-green-500 pointer-events-none" : "bg-yellow-500 hover:bg-yellow-600"
+      } text-white`}
+    >
+      {isVerified ? "Verified" : "Not Verified"}
+    </span>
+  );
+}
 
     return <>{value}</>;
   };
@@ -230,7 +258,7 @@ const TableList = <T extends Record<string, any>>({
                     </tr>
                   </thead>
                   <tbody>
-                    {data.map((item, idx) => (
+                    {(Array.isArray(data) ? data : []).map((item, idx) => (
                       <tr key={idx} className="border-t text-left">
                         {headings.map((rowdata) => (
                           <td key={rowdata.key} className="px-2 py-2">

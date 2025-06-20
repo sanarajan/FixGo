@@ -10,7 +10,7 @@ import { LoadScript } from "@react-google-maps/api";
 import LocationAutocomplete from "../../../components/LocationPicker/LocationAutocomplete";
 import { useLocation } from "react-router-dom";
 import { hasDataChanged } from "./ValidationEditstaff";
-
+import StaffServices from "../../../components/popups/staffs/StaffServices"
 type Subcategory = {
   _id: string;
   name: string;
@@ -34,6 +34,7 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
     location: "",
     image: null as File | null,
     role: "provider",
+    verified:null
   });
   const location = useLocation();
   const staffItem = location.state;
@@ -51,6 +52,7 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
     []
   );
   const [locationAddress, setLocationAddress] = useState<string | null>(null);
+const [showServiceModal, setShowServiceModal] = useState(false);
 
   useEffect(() => {
     fetchServiceAndSubcategories();
@@ -68,6 +70,7 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
         location: staffItem.address.location || resolvedLocation || "",
         image: staffItem.image || "noimage.png",
         role: staffItem.role || "provider",
+        verified:staffItem.verified
       });
 
       const initialSelectedServices: { [key: string]: string[] } = {};
@@ -229,14 +232,17 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
 
   const handleSubmit = async () => {
     const { isValid, errors } = validateForm(formData);
-    const serviceValid = isServiceSelectionValid(selectedServices);
+    let serviceValid
+    if( formData.verified){
+     serviceValid = isServiceSelectionValid(selectedServices);
+    }
     const finalLocation = locationAddress ?? formData.location;
     if (!isValid) {
       setFormErrors(errors);
       toast.error(errors.email);
       return;
     }
-    if (!serviceValid) {
+    if (!serviceValid  && formData.verified) {
       setFormErrors(errors);
       toast.error("Please select services");
       return;
@@ -263,7 +269,7 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
     formPayload.append("longitude", coordinates?.lng.toString() ?? "");
 
     if (formData.image) formPayload.append("image", formData.image);
-    if (changeService) {
+    if (changeService && formData.verified) {
       formPayload.append("services", JSON.stringify(selectedServices));
       formPayload.append("oldServices", JSON.stringify(orgService));
     }
@@ -313,6 +319,7 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
   } else {
     imageURL = "noimage.png";
   }
+
 
   return (
     <ProviderLayout>
@@ -388,7 +395,30 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
           <h2 className="text-2xl font-bold text-[#5A52A4]">
             Expertise Services
           </h2>
-          <div>
+         {formData.verified && (
+  <button
+    onClick={() => setShowServiceModal(true)}
+    className="bg-[#5A52A4] text-white px-4 py-2 rounded-full font-medium shadow hover:bg-[#4a479c]"
+  >
+    + Add Service
+  </button>
+)}
+<StaffServices
+  servicesData={servicesData}
+  selectedServices={selectedServices}
+  expandedServices={expandedServices}
+  show={showServiceModal}
+  onClose={() => setShowServiceModal(false)}
+  onToggleExpand={toggleExpand}
+  onServiceToggle={handleServiceToggle}
+  onSubcategoryToggle={handleSubcategoryToggle}
+  areAllServicesSelected={areAllServicesSelected}
+  handleSelectAll={handleSelectAll}
+/>
+
+
+
+          {/* <div>
             <label className="font-semibold mr-2">Select All Services</label>
             <input
               type="checkbox"
@@ -449,7 +479,7 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
                 </div>
               )}
             </div>
-          ))}
+          ))} */}
         </div>
 
         {/* === Section 3: Address === */}
@@ -497,6 +527,9 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
           </button>
         </div>
       </div>
+ 
+
+
     </ProviderLayout>
   );
 };

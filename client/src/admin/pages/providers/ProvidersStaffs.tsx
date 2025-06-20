@@ -1,16 +1,21 @@
 import { useEffect, useState } from "react";
 import AdminLayout from "../../../components/AdminLayout/AdminLayout";
 import TableList from "../../../components/tableList/TableList";
-import axiosClient from "../../../api/axiosClient";
+import adminAxiosClient from "../../../api/adminAxiosClient";
 import { User } from "../../../types/User";
 import AddEditService from "../../../components/popups/services/AddEditService";
 import StatusConfirmPopup from "../../../components/popups/tools/StatusConfirmPopup";
+import VerifyUser from "../../../components/popups/staffs/verifyUser"
+import { useLocation } from "react-router-dom";
 
 interface providerProps {
   userType: string;
 }
 const ProvidersStaffs = ({ userType }: providerProps) => {
-  const [users, setUsers] = useState<User[]>([]);
+  const location = useLocation();
+    const providerId = location.state.providerId;
+    console.log(providerId+" id")
+  const [staffs, setStaffs] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [busy, setBusy]             = useState(false);
   const [page, setPage]             = useState(1);
@@ -24,35 +29,44 @@ const ProvidersStaffs = ({ userType }: providerProps) => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axiosClient.get(`/api/admin/providers?page=${page}&limit=3`, {
-        headers: {
-          userRole: userType,
-        },
-      });
+      console.log(providerId+" passed id")
+      const response = await adminAxiosClient.get(`/api/admin/providersStaffs`,{
+  params: {
+    page,
+    limit: 3,
+    providerId, // your id value
+  }},);
+    setStaffs(response.data.customers); 
 
-      setUsers(response.data.customers);
-    setTotalPages(response.data.totalPages); 
+   setTotalPages(response.data.totalPages); 
     setTotCount(response.data.totalCount)
+    console.log("filteredUsers", response.data); // ✅ This will now log properly
+
     } catch (error) {
       //  console.error('Error fetching users:', error);
-      setUsers([]);
+      setStaffs([]);
     } finally {
       setBusy(false);
     }
   };
-  const filteredUsers = users;
+  const filteredUsers = staffs;
   if (searchTerm) {
     
-    const filteredUsers = searchTerm
-  ? users.filter((user) =>
+ let filteredUsers = staffs;
+
+if (searchTerm) {
+  filteredUsers = staffs.filter((user) =>
     user.username?.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  : users;
+  );
+}
+
+console.log("last filer", staffs); // ✅ This will now log properly
+
+
+
+
+
   }
-  const handleStaffClick = (providerId: string) => {
-  console.log("Staff clicked for", providerId);
-  // You can navigate or open popup here
-};
   return (
     <AdminLayout>
       <TableList
@@ -72,7 +86,7 @@ const ProvidersStaffs = ({ userType }: providerProps) => {
           { key: "email", label: "Email" },
           { key: "phone", label: "Mobile" },
           { key: "status", label: "Status", type: "status" },
-          { key: "isStaffExist", label: "Staffs", type: "button" },       
+           { key: "verified", label: "Verify", type: "verified" },
          ]}
         showSubcategory={false}
         showActions={["view", "blockUnblock"]}
@@ -86,9 +100,13 @@ const ProvidersStaffs = ({ userType }: providerProps) => {
             component: StatusConfirmPopup,
             params: { api: "/api/admin/blockUnblockProvider" },
           },
+           verify: {
+              type: "popup",
+              component: VerifyUser,
+              params: { api: "/api/admin/verifyStaff" },
+            },
         }}
         refresh={refresh}
-          handleStaffClick={handleStaffClick}
       />
     </AdminLayout>
   );
