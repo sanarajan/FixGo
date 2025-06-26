@@ -26,6 +26,7 @@ interface StaffServiceModalProps {
   ) => void;
   areAllServicesSelected: () => boolean;
   handleSelectAll: (isChecked: boolean) => void;
+  onSave: () => void;
 }
 
 const StaffServices: React.FC<StaffServiceModalProps> = ({
@@ -39,6 +40,7 @@ const StaffServices: React.FC<StaffServiceModalProps> = ({
   onSubcategoryToggle,
   areAllServicesSelected,
   handleSelectAll,
+  onSave
 }) => {
   if (!show) return null;
 
@@ -120,7 +122,8 @@ const StaffServices: React.FC<StaffServiceModalProps> = ({
             Cancel
           </button>
           <button
-            onClick={onClose}
+            // onClick={onClose}
+              onClick={onSave}
             className="bg-[#5A52A4] text-white px-4 py-2 rounded hover:bg-[#4a479c]"
           >
             Save

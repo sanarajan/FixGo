@@ -20,7 +20,7 @@ const ProviderServices = ({ userType }: providerProps) => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totCount, setTotCount] = useState(0);
-  const [isCompany,setIscompany] =useState<boolean|null>(user?.isCompany)
+  const [isCompany, setIscompany] = useState<boolean | null>(user?.isCompany);
   useEffect(() => {
     fetchServices();
   }, [page]);
@@ -56,32 +56,47 @@ const ProviderServices = ({ userType }: providerProps) => {
         )
       : services;
   }
-type ActionType = {
-  type: string;
-  component: React.FC<any>;
-  params?: { api: string };
-};
+  type ActionType = {
+    type: string;
+    component: React.FC<any>;
+    params?: { api: string };
+  };
 
-// Declare actionConfig as a dynamic object
-const actionConfig: Record<string, ActionType> = {
-  edit: { type: "popup", component: AddProviderService },
-  view: { type: "popup", component: AddProviderService },
-  delete: {
-    type: "popup",
-    component: DeleteConfirmPopup,
-    params: { api: "/api/provider/deleteProviderService" },
-  },
-  blockUnblock: {
-    type: "popup",
-    component: StatusConfirmPopup,
-    params: { api: "/api/provider/providerServiceBlockUnblock" },
-  },
-};
+  // Declare actionConfig as a dynamic object
+  const actionConfig: Record<string, ActionType> = {
+    edit: { type: "popup", component: AddProviderService },
+    view: { type: "popup", component: AddProviderService },
+    // delete: {
+    //   type: "popup",
+    //   component: DeleteConfirmPopup,
+    //   params: { api: "/api/provider/deleteProviderService" },
+    // },
+    blockUnblock: {
+      type: "popup",
+      component: StatusConfirmPopup,
+      params: { api: "/api/provider/providerServiceBlockUnblock" },
+    },
+  };
 
-// Conditionally add "add" key
-if (!isCompany) {
-  actionConfig["add"] = { type: "popup", component: AddProviderService };
-}
+  // Conditionally add "add" key
+  let showActions: (
+    | "view"
+    | "edit"
+    | "blockUnblock"
+    | "delete"
+    | "add"
+    | "verify"
+  )[] = ["view", "edit", "blockUnblock"];
+
+  if (!isCompany) {
+    actionConfig["add"] = { type: "popup", component: AddProviderService };
+    actionConfig["delete"] = {
+      type: "popup",
+      component: DeleteConfirmPopup,
+      params: { api: "/api/provider/deleteProviderService" },
+    };
+    showActions.push("delete", "add");
+  }
 
   return (
     <ProviderLayout>
@@ -99,14 +114,16 @@ if (!isCompany) {
           { key: "image", label: "Image", type: "image" },
           { key: "serviceId.serviceName", label: "Servicename" },
           { key: "subcategoryId.subcategory", label: "Subcategory" },
+           { key: "amountPerHour", label: "Amount/Hr" },
+           { key: "averageTimeInHours", label: "Avg Time/Hr" },
+           { key: "totalAmount", label: "Avg total amt(Rs)" },           
           { key: "status", label: "Status", type: "status" },
         ]}
+        showActions={showActions}
         showSubcategory={false}
-        showActions={["view", "edit", "delete", "blockUnblock"]}
         actionConfig={actionConfig}
         refresh={refresh}
         imagePath="providerServices/"
-        
       />
     </ProviderLayout>
   );

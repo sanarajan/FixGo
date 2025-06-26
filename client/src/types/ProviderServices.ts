@@ -11,6 +11,8 @@ export interface  IproviderServices {
     status: string,    
     createdBy:string, 
     updatedBy:string,
+    isCompany?:boolean,
+    verified?:boolean
  
  
 }

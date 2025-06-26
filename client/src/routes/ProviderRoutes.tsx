@@ -13,13 +13,16 @@ import { UserRole } from "../components/Login/Login";
 import ProtectedRoute from "../components/ProtectedRoute";
 import CustomersList from "../providers/pages/CustomersList";
 import StaffsList from "../providers/pages/staffs/StaffsList";
-
 import ProviderServices from "../providers/pages/providerServices/ProviderServices";
 import AddStaff from "../providers/pages/staffs/AddStaff";
 import EditStaff from "../providers/pages/staffs/EditStaff";
 import ProfilePage from "../providers/pages/profile/ProfilePage"
 import Bookings from "../providers/pages/bookings/Bookings";
-
+import  Offers from "../providers/pages/offers/Offers"
+import AddOffer from "../providers/pages/offers/AddOffer";
+import EditOffer from "../providers/pages/offers/EditOffer";
+import Coupons from "../providers/pages/coupons/Coupons";
+import AddCoupon from "../providers/pages/coupons/AddCoupon"
 const ProviderRoutes = () => {
   return (
     <div>
@@ -104,6 +107,27 @@ const ProviderRoutes = () => {
           path="/bookings"
           element={<Bookings userType={"provider"} />}
         />
+         <Route
+          path="/offers"
+          element={<Offers  userType={"provider"}/>}
+        />
+         <Route
+          path="/addOffer"
+          element={<AddOffer  userType={"provider"}/>}
+        />
+          <Route
+          path="/editOffer"
+          element={<EditOffer  />}
+        />
+         <Route
+          path="/coupons"
+          element={<Coupons  userType={"provider"}/>}
+        />
+         <Route
+          path="/addCoupon"
+          element={<AddCoupon />}
+        />
+        
       </Routes>
      
       

@@ -79,6 +79,7 @@ const ProviderRegister: React.FC<SignUpProps> = ({ imageSrc }) => {
           withCredentials: true,
         });
         if (response.status === 201) {
+          console.log(" yes registerd success")
           toast.success("Signup successful! Redirecting to login...", {
             position: "top-right",
             autoClose: 2000,
@@ -89,6 +90,7 @@ const ProviderRegister: React.FC<SignUpProps> = ({ imageSrc }) => {
           let userType = "provider";
           const email = response.data.user.email;
           const userRole = response.data.user.role;
+           console.log(email,userRole," yes verified success")
           try {
             const response: AxiosResponse<OtpResponse> = await axios.post(
               `${API}/api/emailVerification`,
@@ -96,6 +98,8 @@ const ProviderRegister: React.FC<SignUpProps> = ({ imageSrc }) => {
               { withCredentials: true }
             );
             if (response.status === 200) {
+                        console.log(" yes verified success")
+
               const { otp } = response.data;
 
               toast.success("Login successfulll! Redirecting...", {

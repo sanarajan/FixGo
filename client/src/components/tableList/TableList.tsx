@@ -5,12 +5,14 @@ import noImage from "../../assets/images/noimage.png";
 import EnhancedPagination from "../../components/Pagination";
 import { motion, AnimatePresence } from "framer-motion";
 import { getNestedValue } from "../../utils/NestedKeyHelper";
-interface Heading {
+export interface Heading<T> {
   key: string;
   label: string;
-  type?: "image" | "status" | "text" | "button"| "verified";
+  type?: "image" | "status" | "text" | "button"| "verified"|"date";
   
+   format?: (row: T) => string;
 }
+
 interface ActionConfigItem {
   type: "popup" | "page";
   path?: string;
@@ -30,9 +32,9 @@ interface TableListProps<T> {
   userType?: string;
 
   // allservices?:T[]
-  headings: Heading[];
+  headings: Heading<T>[]; 
   showSubcategory: boolean;
-  showActions?: ("view" | "edit" | "delete" | "blockUnblock"|"verify")[];
+  showActions?: ("add"|"view" | "edit" | "delete" | "blockUnblock"|"verify")[];
 
   actionConfig: {
     add?: ActionConfigItem;
@@ -128,7 +130,7 @@ const TableList = <T extends Record<string, any>>({
       />
     );
   };
-  const renderCell = (data: T, heading: Heading) => {
+  const renderCell = (data: T, heading: Heading<T>) => {
     const value = getNestedValue(data, heading.key);
 
     if (heading.key === "serviceName") {
@@ -154,6 +156,7 @@ const TableList = <T extends Record<string, any>>({
       );
     }
     if (heading.type === "status" && showActions?.includes("blockUnblock")) {
+      console.log(" yes it is status")
       return (
         <span
           onClick={() => handleAction("blockUnblock", data)}
@@ -204,7 +207,9 @@ if (heading.type === "verified") {
     </span>
   );
 }
-
+if (heading.format) {
+  return heading.format(data);
+}
     return <>{value}</>;
   };
 

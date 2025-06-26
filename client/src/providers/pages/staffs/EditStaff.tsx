@@ -10,7 +10,7 @@ import { LoadScript } from "@react-google-maps/api";
 import LocationAutocomplete from "../../../components/LocationPicker/LocationAutocomplete";
 import { useLocation } from "react-router-dom";
 import { hasDataChanged } from "./ValidationEditstaff";
-import StaffServices from "../../../components/popups/staffs/StaffServices"
+import StaffServices from "../../../components/popups/staffs/StaffServices";
 type Subcategory = {
   _id: string;
   name: string;
@@ -34,11 +34,11 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
     location: "",
     image: null as File | null,
     role: "provider",
-    verified:null
+    verified: null,
   });
   const location = useLocation();
   const staffItem = location.state;
- const verified = staffItem.verified
+  const verified = staffItem.verified;
   const [selectedServices, setSelectedServices] = useState<{
     [key: string]: string[];
   }>({});
@@ -52,12 +52,11 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
     []
   );
   const [locationAddress, setLocationAddress] = useState<string | null>(null);
-const [isStaffVerified,setIsStaffVerified] = useState<boolean>(verified)
-const [showServiceModal, setShowServiceModal] = useState(false);
+  const [isStaffVerified, setIsStaffVerified] = useState<boolean>(verified);
+  const [showServiceModal, setShowServiceModal] = useState(false);
 
   useEffect(() => {
-     if(isStaffVerified)
-       fetchServiceAndSubcategories();
+    if (isStaffVerified) fetchServiceAndSubcategories();
     const resolvedLocation =
       Array.isArray(staffItem.address) && staffItem.address.length
         ? staffItem.address[0].location
@@ -72,28 +71,28 @@ const [showServiceModal, setShowServiceModal] = useState(false);
         location: staffItem.address.location || resolvedLocation || "",
         image: staffItem.image || "noimage.png",
         role: staffItem.role || "provider",
-        verified:staffItem.verified
+        verified: staffItem.verified,
       });
       //if staff verified then add service
-  if(isStaffVerified){
-      const initialSelectedServices: { [key: string]: string[] } = {};
-      if (Array.isArray(staffItem.staffServices)) {
-        staffItem.staffServices.forEach((item: any) => {
-          const { serviceId, subcategoryId } = item;
-          if (serviceId && subcategoryId) {
-            if (!initialSelectedServices[serviceId]) {
-              initialSelectedServices[serviceId] = [];
+      if (isStaffVerified) {
+        const initialSelectedServices: { [key: string]: string[] } = {};
+        if (Array.isArray(staffItem.staffServices)) {
+          staffItem.staffServices.forEach((item: any) => {
+            const { serviceId, subcategoryId } = item;
+            if (serviceId && subcategoryId) {
+              if (!initialSelectedServices[serviceId]) {
+                initialSelectedServices[serviceId] = [];
+              }
+              if (!initialSelectedServices[serviceId].includes(subcategoryId)) {
+                initialSelectedServices[serviceId].push(subcategoryId);
+              }
             }
-            if (!initialSelectedServices[serviceId].includes(subcategoryId)) {
-              initialSelectedServices[serviceId].push(subcategoryId);
-            }
-          }
-        });
-      }      
+          });
+        }
 
-      setSelectedServices(initialSelectedServices);
-      setExpandedServices(Object.keys(initialSelectedServices));
-    }
+        setSelectedServices(initialSelectedServices);
+        setExpandedServices(Object.keys(initialSelectedServices));
+      }
       setCoordinates({
         lat: staffItem.address[0].latitude,
         lng: staffItem.address[0].longitude,
@@ -102,7 +101,7 @@ const [showServiceModal, setShowServiceModal] = useState(false);
   }, []);
 
   const navigate = useNavigate();
- 
+
   const fetchServiceAndSubcategories = async () => {
     try {
       const response = await axiosClient.get(
@@ -173,7 +172,6 @@ const [showServiceModal, setShowServiceModal] = useState(false);
 
       return newSelected;
     });
-  
   };
 
   const areAllServicesSelected = () => {
@@ -236,83 +234,112 @@ const [showServiceModal, setShowServiceModal] = useState(false);
 
   const handleSubmit = async () => {
     const { isValid, errors } = validateForm(formData);
-    let serviceValid
-    if(isStaffVerified){
-    if( formData.verified){
-     serviceValid = isServiceSelectionValid(selectedServices);
-    }
-    const finalLocation = locationAddress ?? formData.location;
-    if (!isValid) {
-      setFormErrors(errors);
-      toast.error(errors.email);
-      return;
-    }
-    // if (!serviceValid &&isStaffVerified) {
-    if (!serviceValid  && formData.verified) {
-      setFormErrors(errors);
-      toast.error("Please select services");
-      return;
-    }
-    if (!finalLocation) {
-      toast.error("Location is required");
-      return;
-    }
-
-    const orgService = staffItem.staffServices || [];
-    const changeService = hasDataChanged(orgService, selectedServices);
-
-    const imageString = formData.image ? formData.image.name : null;
-
-    const formPayload = new FormData();
-    formPayload.append("fullname", formData.fullname);
-    formPayload.append("email", formData.email);
-    formPayload.append("username", "");
-
-    formPayload.append("phone", formData.phone);
-    formPayload.append("type", "staff");
-    formPayload.append("location", finalLocation ?? "");
-    formPayload.append("latitude", coordinates?.lat.toString() ?? "");
-    formPayload.append("longitude", coordinates?.lng.toString() ?? "");
-
-    if (formData.image) formPayload.append("image", formData.image);
-    // if (changeService &&isStaffVerified) {
-    //   console.log(JSON.stringify(selectedServices)+"  stringify")
-    if (changeService && formData.verified) {
-      formPayload.append("services", JSON.stringify(selectedServices));
-      formPayload.append("oldServices", JSON.stringify(orgService));
-    }
-    try {
-      const response = await axiosClient.patch(
-        `/api/provider/editStaff/${staffItem._id}`,
-        formPayload,
-        {
-          headers: {
-            userRole: userType,
-          },
-        }
-      );
-      if (response.status === 200) {
-        toast.success("Staff updated successfully");
-        navigate("/provider/staffs");
-      } else {
-        toast.error("Failed to update staff. Please try again.");
+    let serviceValid;
+    if (isStaffVerified) {
+      if (formData.verified) {
+        serviceValid = isServiceSelectionValid(selectedServices);
       }
-    } catch (err) {
-      console.error("Error updating staff:", err);
-      toast.error("An error occurred while updating staff");
+      const finalLocation = locationAddress ?? formData.location;
+      if (!isValid) {
+        setFormErrors(errors);
+        toast.error(errors.email);
+        return;
+      }
+      // if (!serviceValid &&isStaffVerified) {
+      if (!serviceValid && formData.verified) {
+        setFormErrors(errors);
+        toast.error("Please select services");
+        return;
+      }
+      if (!finalLocation) {
+        toast.error("Location is required");
+        return;
+      }
+
+      const orgService = staffItem.staffServices || [];
+      const changeService = hasDataChanged(orgService, selectedServices);
+
+      const imageString = formData.image ? formData.image.name : null;
+
+      const formPayload = new FormData();
+      formPayload.append("fullname", formData.fullname);
+      formPayload.append("email", formData.email);
+      formPayload.append("username", "");
+
+      formPayload.append("phone", formData.phone);
+      formPayload.append("type", "staff");
+      formPayload.append("location", finalLocation ?? "");
+      formPayload.append("latitude", coordinates?.lat.toString() ?? "");
+      formPayload.append("longitude", coordinates?.lng.toString() ?? "");
+
+      if (formData.image) formPayload.append("image", formData.image);
+      // if (changeService &&isStaffVerified) {
+      //   console.log(JSON.stringify(selectedServices)+"  stringify")
+      if (changeService && formData.verified) {
+        formPayload.append("services", JSON.stringify(selectedServices));
+        formPayload.append("oldServices", JSON.stringify(orgService));
+      }
+      try {
+        const response = await axiosClient.patch(
+          `/api/provider/editStaff/${staffItem._id}`,
+          formPayload,
+          {
+            headers: {
+              userRole: userType,
+            },
+          }
+        );
+        if (response.status === 200) {
+          toast.success("Staff updated successfully");
+          navigate("/provider/staffs");
+        } else {
+          toast.error("Failed to update staff. Please try again.");
+        }
+      } catch (err) {
+        console.error("Error updating staff:", err);
+        toast.error("An error occurred while updating staff");
+      }
     }
-  }
   };
 
   const handleLocationSelect = (coords: {
     lat: number;
     lng: number;
     address: string;
-  }) => {console.log("hfgfgj")
+  }) => {
+    console.log("hfgfgj");
     setLocationAddress(coords.address);
     setCoordinates({ lat: coords.lat, lng: coords.lng });
     setFormData((prev) => ({ ...prev, location: coords.address }));
   };
+
+  const handleSaveServices = async () => {
+  try {
+    const response = await axiosClient.post(
+      "/api/provider/saveStaffServices",
+      {
+        staffId: staffItem._id,
+        services: selectedServices,
+      },
+      {
+        headers: {
+          userRole: userType,
+        },
+      }
+    );
+
+    if (response.status === 200) {
+      toast.success("Services saved successfully");
+      setShowServiceModal(false);
+    } else {
+      toast.error("Failed to save services");
+    }
+  } catch (error) {
+    console.error("Error saving staff services:", error);
+    toast.error("An error occurred while saving services");
+  }
+};
+
   const googlekey = import.meta.env.VITE_GOOGLEAPI_KEY;
   const API = import.meta.env.VITE_API_URL;
 
@@ -328,7 +355,6 @@ const [showServiceModal, setShowServiceModal] = useState(false);
   } else {
     imageURL = "noimage.png";
   }
-
 
   return (
     <ProviderLayout>
@@ -400,35 +426,34 @@ const [showServiceModal, setShowServiceModal] = useState(false);
         </div>
 
         {/* === Section 2: Manage Services === */}
-        { isStaffVerified&&(
-        <div className="p-5 rounded-md border border-gray-300 bg-[#F9F9FC] space-y-4">
-          <h2 className="text-2xl font-bold text-[#5A52A4]">
-            Expertise Services
-          </h2>
-         {formData.verified && (
-  <button
-    onClick={() => setShowServiceModal(true)}
-    className="bg-[#5A52A4] text-white px-4 py-2 rounded-full font-medium shadow hover:bg-[#4a479c]"
-  >
-    + Add Service
-  </button>
-)}
-<StaffServices
-  servicesData={servicesData}
-  selectedServices={selectedServices}
-  expandedServices={expandedServices}
-  show={showServiceModal}
-  onClose={() => setShowServiceModal(false)}
-  onToggleExpand={toggleExpand}
-  onServiceToggle={handleServiceToggle}
-  onSubcategoryToggle={handleSubcategoryToggle}
-  areAllServicesSelected={areAllServicesSelected}
-  handleSelectAll={handleSelectAll}
-/>
+        {isStaffVerified && (
+          <div className="p-5 rounded-md border border-gray-300 bg-[#F9F9FC] space-y-4">
+            <h2 className="text-2xl font-bold text-[#5A52A4]">
+              Expertise Services
+            </h2>
+            {formData.verified && (
+              <button
+                onClick={() => setShowServiceModal(true)}
+                className="bg-[#5A52A4] text-white px-4 py-2 rounded-full font-medium shadow hover:bg-[#4a479c]"
+              >
+                + Add Service
+              </button>
+            )}
+            <StaffServices
+              servicesData={servicesData}
+              selectedServices={selectedServices}
+              expandedServices={expandedServices}
+              show={showServiceModal}
+              onClose={() => setShowServiceModal(false)}
+              onToggleExpand={toggleExpand}
+              onServiceToggle={handleServiceToggle}
+              onSubcategoryToggle={handleSubcategoryToggle}
+              areAllServicesSelected={areAllServicesSelected}
+              handleSelectAll={handleSelectAll}
+              onSave={handleSaveServices}
+            />
 
-
-
-          {/* <div>
+            {/* <div>
             <label className="font-semibold mr-2">Select All Services</label>
             <input
               type="checkbox"
@@ -490,37 +515,37 @@ const [showServiceModal, setShowServiceModal] = useState(false);
               )}
             </div>
           ))} */}
-        </div>
+          </div>
         )}
 
         {/* === Section 3: Address === */}
         <div className="p-5 rounded-md border border-gray-300 bg-[#F9F9FC]">
           <h2 className="text-2xl font-bold text-[#5A52A4] mb-4">Address</h2>
           {/* <LoadScript googleMapsApiKey={googlekey} libraries={["places"]}> */}
-            <div className="flex flex-col">
-              <label className="font-medium text-sm mb-1">Location</label>
-              <LocationAutocomplete
-                locationAddress={locationAddress || ""}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  const input = e.target.value;
-                  setLocationAddress(input);
-                  setFormData((prev) => ({ ...prev, location: input }));
-                }}
-                onSelect={handleLocationSelect}
-              />
-              {/* <button type="button" onClick={handleLocationClick}>
+          <div className="flex flex-col">
+            <label className="font-medium text-sm mb-1">Location</label>
+            <LocationAutocomplete
+              locationAddress={locationAddress || ""}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                const input = e.target.value;
+                setLocationAddress(input);
+                setFormData((prev) => ({ ...prev, location: input }));
+              }}
+              onSelect={handleLocationSelect}
+            />
+            {/* <button type="button" onClick={handleLocationClick}>
                 Use My Current Location
               </button> */}
-              {formErrors.location && (
-                <span className="text-red-500 text-sm mt-1">
-                  {formErrors.location}
-                </span>
-              )}
-            </div>
-            <LocationPicker
-              coordinates={coordinates}
-              onLocationSelect={handleLocationSelect}
-            />
+            {formErrors.location && (
+              <span className="text-red-500 text-sm mt-1">
+                {formErrors.location}
+              </span>
+            )}
+          </div>
+          <LocationPicker
+            coordinates={coordinates}
+            onLocationSelect={handleLocationSelect}
+          />
           {/* </LoadScript> */}
 
           {formErrors.location && (
@@ -538,11 +563,8 @@ const [showServiceModal, setShowServiceModal] = useState(false);
           </button>
         </div>
       </div>
- 
-
-
     </ProviderLayout>
   );
-}
+};
 
 export default EditStaff;

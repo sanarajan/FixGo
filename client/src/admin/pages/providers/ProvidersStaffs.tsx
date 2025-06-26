@@ -5,7 +5,7 @@ import adminAxiosClient from "../../../api/adminAxiosClient";
 import { User } from "../../../types/User";
 import AddEditService from "../../../components/popups/services/AddEditService";
 import StatusConfirmPopup from "../../../components/popups/tools/StatusConfirmPopup";
-import VerifyUser from "../../../components/popups/staffs/verifyUser"
+import VerifyUser from "../../../components/popups/staffs/VerifyUser"
 import { useLocation } from "react-router-dom";
 
 interface providerProps {
