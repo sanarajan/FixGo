@@ -56,6 +56,8 @@ export class EditStaffUsecase {
     user.role = "provider";
     user.providerId = adminId;
     user.status = "Active";
+        user.updatedBy=adminId
+
     if (!user.fullname || user.fullname.trim() === "") {
       user.username = "";
     } else {

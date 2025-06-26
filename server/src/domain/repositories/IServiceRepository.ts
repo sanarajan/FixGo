@@ -1,7 +1,7 @@
 import { IService } from "../models/Iservices";
 import { Types } from "mongoose";
 import {IServiceSubcategories} from "../models/IServiceSubcategories"
-
+import {IproviderServices} from "../models/IproviderServices"
 export interface IServiceRepository {
   listServices(page?: number, limit?: number): Promise<IService[]>;
   addService(data: Partial<IService>): Promise<IService>;
@@ -18,6 +18,6 @@ export interface IServiceRepository {
   editSubcategory(id: string, data: Partial<IServiceSubcategories>): Promise<IServiceSubcategories>;
   changesubcategoryStatusById(id: string,status:string,admin:string): Promise<boolean | null>;
   findAndDeleteSubcategory(id: string): Promise<IServiceSubcategories | null>;
-  
-  
+  getManyByIds(ids: Types.ObjectId[] | string[]): Promise<IServiceSubcategories[]>;
+
 }

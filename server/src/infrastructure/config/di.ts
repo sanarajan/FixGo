@@ -23,6 +23,9 @@ import { IPaymentService } from '../../domain/services/IPaymentService';
 import { StripePaymentService } from '../../infrastructure/services/StripePaymentServices';
 import {IOrderRepositoryImpl} from "../../infrastructure/database/repositories/IOrderRepositoryImpl"
 import {IOrderRepository} from "../../domain/repositories/customer/IOrderRepository"
+
+import {IOfferCouponRepository} from "../../domain/repositories/IOfferCouponRepository";
+import {IOfferCouponRepositoryImpl} from "../../infrastructure/database/repositories/IOfferCouponRepositoryImpl"
 // Register interfaces to concrete implementations
 container.register<UserRepository>("UserRepository", {
     useClass: UserRepositoryImpl,
@@ -63,4 +66,7 @@ container.register<IPaymentService>('IPaymentService', {
 });
 container.register<IOrderRepository>('IOrderRepository', {
   useClass: IOrderRepositoryImpl,
+});
+container.register<IOfferCouponRepository>('IOfferCouponRepository', {
+  useClass: IOfferCouponRepositoryImpl,
 });

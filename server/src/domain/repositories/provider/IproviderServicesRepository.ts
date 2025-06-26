@@ -1,4 +1,6 @@
 import { IproviderServices } from "../../models/IproviderServices";
+
+import {StaffProviderService} from "../../models/StaffProviderService"
 import { Types } from "mongoose";
 import {GroupedProviderService} from "../../models/GroupProviderServices"
 export interface IproviderServicesRepository {
@@ -10,9 +12,10 @@ export interface IproviderServicesRepository {
   findAndDeleteProviderService(id: string): Promise<IproviderServices | null>;
   changeProServiceStatusById(id: string,status:string,admin:string): Promise<boolean | null>;
   GroupProviderServices(adminId:string): Promise<GroupedProviderService[] | null>;   
-  addMultipleStaffServices(data: Partial<IproviderServices>[]): Promise<IproviderServices[]>;
+  addMultipleStaffServices(data: Partial<IproviderServices>[]): Promise<StaffProviderService[]>;
 removeStaffService(staffId: string, serviceId: string, subcategoryId: string): Promise<void>;
   ServiceListForStaff(adminId:string): Promise<GroupedProviderService[] | null>;   
+  getByProviderId(providerId:string): Promise<IproviderServices[] | null>;
 
  
 

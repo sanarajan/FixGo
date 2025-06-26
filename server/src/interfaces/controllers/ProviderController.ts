@@ -15,15 +15,16 @@ import { StaffListUsecase } from "../../application/use-cases/provider/providerS
 import { EditStaffUsecase } from "../../application/use-cases/provider/providerServices/staffs/EditStaffUsecase";
 
 import { BlockStaffUsecase } from "../../application/use-cases/provider/providerServices/staffs/BlockStaffUsecase";
-import {SaveProfileUsecase} from "../../application/use-cases/provider/providerServices/SaveProfileUsecase";
-import {ShowProviderProfileUsecase} from "../../application/use-cases/provider/providerServices/ShowProviderProfileUsecase"
+import { SaveProfileUsecase } from "../../application/use-cases/provider/providerServices/SaveProfileUsecase";
+import { ShowProviderProfileUsecase } from "../../application/use-cases/provider/providerServices/ShowProviderProfileUsecase";
+import { Types } from "mongoose";
 
-import {ProviderEditUsecase} from "../../application/use-cases/provider/providerServices/ProviderEditUsecase"
-import {ProviderAddressEditUsecase} from "../../application/use-cases/provider/providerServices/ProviderAddressEditUsecase"
+import { ProviderEditUsecase } from "../../application/use-cases/provider/providerServices/ProviderEditUsecase";
+import { ProviderAddressEditUsecase } from "../../application/use-cases/provider/providerServices/ProviderAddressEditUsecase";
 import bcrypt from "bcrypt";
-import {ProviderResetPasswordUsecase} from "../../application/use-cases/provider/providerServices/ProviderResetPasswordUsecase"
+import { ProviderResetPasswordUsecase } from "../../application/use-cases/provider/providerServices/ProviderResetPasswordUsecase";
 import { ServiceListForStaffUsecase } from "../../application/use-cases/provider/providerServices/ServiceListForStaffUsecase";
-
+import {GetProviderServiceAndSubcategoryUsecase} from "../../application/use-cases/provider/offers/GetProviderServiceAndSubcategoryUsecase"
 interface CustomError extends Error {
   status?: number;
 }
@@ -32,15 +33,16 @@ export const providerServices = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-   const userAdmin = (req as any).user;
-   const adminId = userAdmin.id
-  try {      
-    
+  const userAdmin = (req as any).user;
+  const adminId = userAdmin.id;
+  try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const listServicesUseCase = container.resolve(ProviderServiceUsecase);
-    const services = await listServicesUseCase.execute(page, limit,adminId);
-    const totalCount = await ProviderServicesModel.countDocuments({createdBy:adminId});
+    const services = await listServicesUseCase.execute(page, limit, adminId);
+    const totalCount = await ProviderServicesModel.countDocuments({
+      createdBy: adminId,
+    });
     const totalPages = Math.ceil(totalCount / limit);
     res
       .status(200)
@@ -83,6 +85,15 @@ export const providerAddService = async (
   try {
     const userAdmin = (req as any).user;
     const data = req.body;
+    data.amountPerHour = req.body.amountPerHour
+      ? parseFloat(req.body.amountPerHour)
+      : undefined;
+    data.averageTimeInHours = req.body.averageTimeInHours
+      ? parseFloat(req.body.averageTimeInHours)
+      : undefined;
+    data.totalAmount = req.body.totalAmount
+      ? parseFloat(req.body.totalAmount)
+      : undefined;
     if (req.file) {
       // data.image = req.file.path; // Save file path or URL
       data.image = req.file.filename;
@@ -105,6 +116,15 @@ export const providerUpdateService = async (req: Request, res: Response) => {
     const admin = (req as any).user;
     const id = req.params.id;
     const data = req.body;
+       data.amountPerHour = req.body.amountPerHour
+      ? parseFloat(req.body.amountPerHour)
+      : undefined;
+    data.averageTimeInHours = req.body.averageTimeInHours
+      ? parseFloat(req.body.averageTimeInHours)
+      : undefined;
+    data.totalAmount = req.body.totalAmount
+      ? parseFloat(req.body.totalAmount)
+      : undefined;
     if (req.file) {
       data.image = req.file.filename;
     }
@@ -150,7 +170,7 @@ export const providerServiceBlockUnblock = async (
 export const groupedProviderServices = async (req: Request, res: Response) => {
   try {
     const admin = (req as any).user;
-    const adminId=admin.id
+    const adminId = admin.id;
     const id = req.params.id;
     const servicesFetch = container.resolve(GroupProviderServiceUsecase);
     const services = await servicesFetch.execute(adminId);
@@ -164,7 +184,7 @@ export const groupedProviderServices = async (req: Request, res: Response) => {
 export const listingServiceForStaff = async (req: Request, res: Response) => {
   try {
     const admin = (req as any).user;
-    const adminId=admin.id
+    const adminId = admin.id;
     const id = req.params.id;
     const servicesFetch = container.resolve(ServiceListForStaffUsecase);
     const services = await servicesFetch.execute(adminId);
@@ -200,11 +220,20 @@ export const addStaff = async (req: Request, res: Response): Promise<void> => {
     const { location, services: _s, ...userData } = data;
     // console.log(userData.longitude+"--location cords-"+userData.latitude)
     const latitude = userData.latitude ? parseFloat(userData.latitude) : null;
-const longitude = userData.longitude ? parseFloat(userData.longitude) : null;
+    const longitude = userData.longitude
+      ? parseFloat(userData.longitude)
+      : null;
 
-if (latitude === null || isNaN(latitude) || longitude === null || isNaN(longitude)) {
-  throw new Error("Latitude and Longitude are required and must be valid numbers.");
-}
+    if (
+      latitude === null ||
+      isNaN(latitude) ||
+      longitude === null ||
+      isNaN(longitude)
+    ) {
+      throw new Error(
+        "Latitude and Longitude are required and must be valid numbers."
+      );
+    }
     const coords = { latitude: latitude, longitude: longitude };
     const dataUsecase = container.resolve(AddStaffUsecase);
     const addStaffdata = await dataUsecase.execute(
@@ -229,12 +258,16 @@ export const staffList = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userAdmin=(req as any).user
-     const adminId = userAdmin.id
+    const userAdmin = (req as any).user;
+    const adminId = userAdmin.id;
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 3;
     const staffListUsecase = container.resolve(StaffListUsecase);
-    const { data, totalCount } = await staffListUsecase.execute(page, limit,adminId);
+    const { data, totalCount } = await staffListUsecase.execute(
+      page,
+      limit,
+      adminId
+    );
     const totalPages = Math.ceil(totalCount / limit);
 
     res
@@ -247,10 +280,9 @@ export const staffList = async (
 };
 
 export const editStaff = async (req: Request, res: Response): Promise<void> => {
-  try {   
-
+  try {
     const admin = (req as any).user;
-    const providerid =admin.id
+    const providerid = admin.id;
     const id = req.params.id;
     const data = { ...req.body };
 
@@ -272,17 +304,18 @@ export const editStaff = async (req: Request, res: Response): Promise<void> => {
     }
     //old services
     let oldServices: any[] = [];
-if (data.oldServices) {
-  try {
-    oldServices = typeof data.oldServices === "string"
-      ? JSON.parse(data.oldServices)
-      : data.oldServices;
-  } catch (error) {
-    console.error("Error parsing oldServices:", error);
-    res.status(400).json({ error: "Invalid oldServices format" });
-    return;
-  }
-}
+    if (data.oldServices) {
+      try {
+        oldServices =
+          typeof data.oldServices === "string"
+            ? JSON.parse(data.oldServices)
+            : data.oldServices;
+      } catch (error) {
+        console.error("Error parsing oldServices:", error);
+        res.status(400).json({ error: "Invalid oldServices format" });
+        return;
+      }
+    }
 
     const { location, services: _s, ...userData } = data;
     // console.log(userData.longitude+"--location cords-"+userData.latitude)
@@ -306,11 +339,7 @@ if (data.oldServices) {
   }
 };
 
-
-export const staffBlockUnblock = async (
-  req: Request,
-  res: Response
-) => {
+export const staffBlockUnblock = async (req: Request, res: Response) => {
   try {
     const admin = (req as any).user;
     const id = req.params.id;
@@ -327,7 +356,7 @@ export const staffBlockUnblock = async (
 export const saveProfileImage = async (
   req: Request,
   res: Response
-) :Promise<void> => {
+): Promise<void> => {
   try {
     const admin = (req as any).user;
     const id = admin.id;
@@ -335,12 +364,12 @@ export const saveProfileImage = async (
     if (req.file) {
       image = req.file.filename;
     }
-    console.log("ETHUNNUND"+image)
+    console.log("ETHUNNUND" + image);
 
     const profile = container.resolve<SaveProfileUsecase>(SaveProfileUsecase);
     const result = await profile.execute(id, image);
-    console.log(result+"in contr image")
- res.status(200).json({ result });
+    console.log(result + "in contr image");
+    res.status(200).json({ result });
   } catch (err) {
     const e = err as CustomError;
     res.status(e.status || 400).json({ error: e.message });
@@ -353,13 +382,12 @@ export const providerProfile = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userAdmin=(req as any).user
-     const adminId = userAdmin.id
-  
+    const userAdmin = (req as any).user;
+    const adminId = userAdmin.id;
+
     const profile = container.resolve(ShowProviderProfileUsecase);
     const user = await profile.execute(adminId);
 
-   
     if (!user) {
       res.status(404).json({ error: "User not found" });
       return;
@@ -370,26 +398,25 @@ export const providerProfile = async (
     console.error("Error fetching customers:", err);
     res.status(500).json({ error: "Failed to fetch customers" });
   }
-  
 };
 
-export const providerEditPersonal = async (req: Request, res: Response): Promise<void> => {
-  try {   
-
+export const providerEditPersonal = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
     const admin = (req as any).user;
-    const providerid =admin.id
+    const providerid = admin.id;
     const data = { ...req.body };
 
-    
-
-    const { location,  ...userData } = data;
+    const { location, ...userData } = data;
     const coords = { latitude: data.latitude, longitude: data.longitude };
     const editdata = container.resolve(ProviderEditUsecase);
     const addStaffdata = await editdata.execute(
       userData,
       admin.id,
       location,
-      coords,
+      coords
     );
 
     res.status(200).json(addStaffdata);
@@ -398,23 +425,30 @@ export const providerEditPersonal = async (req: Request, res: Response): Promise
     console.error("Controller error:", e);
     res.status(e.status || 400).json({ error: e.message });
   }
-  
 };
 
-export const providerEditAddress = async (req: Request, res: Response): Promise<void> => {
-  try {   
-
+export const providerEditAddress = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
     const admin = (req as any).user;
-    const providerid =admin.id
-    const data = { ...req.body };    
-    const { location,  ...userData } = data;
-const latitude = data.latitude ? parseFloat(data.latitude) : null;
-const longitude = data.longitude ? parseFloat(data.longitude) : null;
+    const providerid = admin.id;
+    const data = { ...req.body };
+    const { location, ...userData } = data;
+    const latitude = data.latitude ? parseFloat(data.latitude) : null;
+    const longitude = data.longitude ? parseFloat(data.longitude) : null;
 
-if (latitude === null || isNaN(latitude) || longitude === null || isNaN(longitude)) {
-  throw new Error("Latitude and Longitude are required and must be valid numbers.");
-}
-
+    if (
+      latitude === null ||
+      isNaN(latitude) ||
+      longitude === null ||
+      isNaN(longitude)
+    ) {
+      throw new Error(
+        "Latitude and Longitude are required and must be valid numbers."
+      );
+    }
 
     const coords = { latitude: latitude, longitude: longitude };
     const editdata = container.resolve(ProviderAddressEditUsecase);
@@ -422,7 +456,7 @@ if (latitude === null || isNaN(latitude) || longitude === null || isNaN(longitud
       userData,
       providerid,
       location,
-      coords,
+      coords
     );
 
     res.status(200).json(addStaffdata);
@@ -431,26 +465,31 @@ if (latitude === null || isNaN(latitude) || longitude === null || isNaN(longitud
     console.error("Controller error:", e);
     res.status(e.status || 400).json({ error: e.message });
   }
-  
 };
 
-
-export const providerPasswordReset = async (req: Request, res: Response): Promise<void> => {
+export const providerPasswordReset = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
-      const { password } =req.body ; 
-       const admin = (req as any).user;
-           console.log(" reached"+admin)
+    const { password } = req.body;
+    const admin = (req as any).user;
+    console.log(" reached" + admin);
 
-    const id =admin.id
+    const id = admin.id;
 
     if (!password || password.length < 6) {
-      res.status(400).json({ message: "Password must be at least 6 characters long" });
+      res
+        .status(400)
+        .json({ message: "Password must be at least 6 characters long" });
       return;
     }
-     console.log(id+"  id und")
+    console.log(id + "  id und");
 
-    const resetPasswordUseCase = container.resolve(ProviderResetPasswordUsecase);
-    const success = await resetPasswordUseCase.execute(password,id);
+    const resetPasswordUseCase = container.resolve(
+      ProviderResetPasswordUsecase
+    );
+    const success = await resetPasswordUseCase.execute(password, id);
 
     if (success) {
       res.status(200).json({ message: "Password updated successfully" });
@@ -461,5 +500,63 @@ export const providerPasswordReset = async (req: Request, res: Response): Promis
     const error = err as Error;
     console.error("Reset Password Error:", error.message);
     res.status(500).json({ message: error.message || "Something went wrong" });
+  }
+};
+
+export const servicesAndSubcategories = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  const userAdmin = (req as any).user;
+  const adminId = userAdmin.id;
+
+  try {
+    const usecase = container.resolve(GetProviderServiceAndSubcategoryUsecase);
+    const result = await usecase.execute(adminId);
+    res.status(200).json(result);
+  } catch (error: any) {
+    console.error(error);
+    res.status(error.status || 500).json({ error: error.message || 'Server error' });
+  }
+};
+interface PopulatedSubcategory {
+  _id: string;
+  subcategory: string;
+}
+
+interface PopulatedProviderService extends Document {
+  subcategoryId: PopulatedSubcategory;
+  createdBy: Types.ObjectId;
+}
+export const getSubcategoriesByServiceId = async (
+  req: Request,
+  res: Response
+) => {
+  const { serviceId } = req.params;
+  const providerId = (req as any).user.id;
+
+  try {
+   const services = await ProviderServicesModel
+  .find({ createdBy: providerId, serviceId,status:"Active" })
+  .populate<{ subcategoryId: PopulatedSubcategory }>({
+    path: 'subcategoryId',
+    select: 'subcategory _id',
+  })
+  .exec();
+
+
+    const subcategories = services
+      .filter(ps => ps.subcategoryId && typeof ps.subcategoryId === 'object')
+      .map((ps) => ({
+        _id: ps.subcategoryId._id,
+        subcategory: ps.subcategoryId.subcategory,
+        providerServiceId: ps._id.toString(),
+      }));
+
+    res.json({ subcategories });
+  } catch (error: any) {
+    console.error("Error fetching subcategories:", error.message);
+    res.status(500).json({ error: error.message || 'Server Error' });
   }
 };

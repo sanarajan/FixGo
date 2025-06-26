@@ -7,8 +7,10 @@ import { IproviderServices } from "../../../domain/models/IproviderServices";
 import {SubcategoryModel} from "../models/SubcategoryModel"
 import { ServiceModel, IService } from "../models/ServiceModel";
 import mongoose, { Types } from "mongoose";
-
+import {StaffProviderService}  from "../../../domain/models/StaffProviderService";
 import { GroupedProviderService } from "../../../domain/models/GroupProviderServices";
+import { UserModel } from "../models/UserModel"; // assuming you have this
+
 @injectable()
 export class IproviderServicesRepositoryImpl
   implements IproviderServicesRepository
@@ -34,6 +36,10 @@ export class IproviderServicesRepositoryImpl
       .populate({
         path: "subcategoryId",
         select: "subcategory status",
+      })
+      .populate({
+        path:"createdBy",
+        select:"verified isCompany"
       })
       .exec();
     return services;
@@ -91,30 +97,97 @@ export class IproviderServicesRepositoryImpl
   }
 
   async changeProServiceStatusById(
-    id: string,
-    status: string,
-    admin: string
-  ): Promise<boolean> {
-    const data = {
-      status: status,
-      updatedBy: admin,
-    };
-    const updated = await ProviderServicesModel.findByIdAndUpdate(
-      id,
-      { $set: data },
-      { new: true, lean: true }
-    );
-    if (!updated) {
-      throw new Error("Failed to update ProviderService");
-    }
-    return updated ? true : false;
+  id: string,
+  status: string,
+  admin: string
+): Promise<boolean> {
+  // 1. Fetch ProviderService
+  const providerService = await ProviderServicesModel.findById(id);
+  if (!providerService) {
+    throw new Error("ProviderService not found");
   }
+
+  // 2. Fetch Provider (creator of this service)
+  const provider = await UserModel.findById(providerService.createdBy).lean();
+  if (!provider) {
+    throw new Error("Provider (creator) not found");
+  }
+
+  const isCompany = provider.isCompany === true;
+  // 3. If provider is a company, apply custom rules
+  if(isCompany) {
+    const providerId = provider._id;
+
+    if (status === "Inactive") {
+      // Inactivate all staff services of this provider using this service
+      await StaffServicesModel.updateMany(
+        {
+          providerServiceId: id,
+          createdBy: providerId,
+        },
+        {
+          $set: {
+            status: status,
+            updatedBy: admin,
+          },
+        }
+      );
+    } else if (status === "Active") {
+      // Step 1: Find staff of this provider who had this service before (any status)
+      const matchingStaffServices = await StaffServicesModel.find({
+        providerServiceId: id,
+        createdBy: providerId,
+      });
+
+      if (matchingStaffServices.length === 0) {
+        throw new Error(
+          "Cannot activate ProviderService — no staff in this provider has this service"
+        );
+      }
+
+      // Step 2: Activate those staff services too
+      await StaffServicesModel.updateMany(
+        {
+          providerServiceId: id,
+          createdBy: providerId,
+        },
+        {
+          $set: {
+            status: status,
+            updatedBy: admin,
+          },
+        }
+      );
+    }
+  }
+
+  // 4. Finally update the ProviderService status
+  const updated = await ProviderServicesModel.findByIdAndUpdate(
+    id,
+    {
+      $set: {
+        status,
+        updatedBy: admin,
+      },
+    },
+    {
+      new: true,
+      lean: true,
+    }
+  );
+
+  if (!updated) {
+    throw new Error("Failed to update ProviderService");
+  }
+
+  return true;
+}
+
 
  async ServiceListForStaff(
     adminId: string
   ): Promise<GroupedProviderService[] | null> {
     try {
-      console.log(" reach impl")
     const results = await SubcategoryModel.aggregate([
   {
     $lookup: {
@@ -213,7 +286,7 @@ export class IproviderServicesRepositoryImpl
   }
   async addMultipleStaffServices(
     data: Partial<IproviderServices>[]
-  ): Promise<IproviderServices[]> {
+  ): Promise<StaffProviderService[]> {
     const createdServices = await StaffServicesModel.insertMany(data);
  //   console.log(createdServices + "  createdservice");
     return createdServices.map((doc) => doc.toObject());
@@ -225,14 +298,19 @@ export class IproviderServicesRepositoryImpl
     subcategoryId: string
   ): Promise<void> {
 
-    console.log("deleting start")
   const result = await StaffServicesModel.deleteOne({
   staffId: new Types.ObjectId(staffId),
   serviceId: new Types.ObjectId(serviceId),
   subcategoryId: new Types.ObjectId(subcategoryId),
 });
 
-console.log("Delete result:", result);
 
   }
+
+ async getByProviderId(providerId: string): Promise<IproviderServices[] | null> {
+  return ProviderServicesModel.find({ createdBy: providerId,status:"Active" }).populate({
+    path: 'serviceId',
+    select: 'serviceName _id',
+  });
+}
 }

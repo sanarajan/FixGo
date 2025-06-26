@@ -1,12 +1,15 @@
 // data/repositories/ServiceRepositoryImpl.ts
 import { injectable } from "tsyringe";
 import { IServiceRepository } from "../../../domain/repositories/IServiceRepository";
-// import { IService } from "../../../domain/models/Iservices";
+import { IproviderServices } from "../../../domain/models/IproviderServices";
 import { ServiceModel,IService } from "../models/ServiceModel";
 import {tokenUserData} from "../../../domain/models/Iservices"
 import {IServiceSubcategories} from "../../../domain/models/IServiceSubcategories"
 import {SubcategoryModel} from "../models/SubcategoryModel"
 export type CreateServiceInput = Pick<IService, 'serviceName' | 'status' | 'createdBy'>;
+import { ProviderServicesModel } from "../models/ProviderServicesModel";
+import mongoose, { Types } from "mongoose";
+
 // export type CreateSubcategoryInput = Pick<IServiceSubcategories, 'serviceId'|'subcategoryNam' | 'status' | 'createdBy'>;
 
 @injectable()
@@ -143,6 +146,11 @@ async findAndDeleteSubcategory(id: string): Promise<IServiceSubcategories> {
   }  
   return deleted;
 }
+
+async getManyByIds(ids: Types.ObjectId[] | string[]): Promise<IServiceSubcategories[]> {
+  return SubcategoryModel.find({ _id: { $in: ids } });
+}
+
 
 
 

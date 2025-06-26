@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
-import {IproviderServices} from "../../../domain/models/IproviderServices"
+import {StaffProviderService} from "../../../domain/models/StaffProviderService"
 
 const StaffServicesSchema: Schema = new Schema(
   {
@@ -18,6 +18,6 @@ const StaffServicesSchema: Schema = new Schema(
   }
 );
 
-const StaffServicesModel = mongoose.model<IproviderServices>('StaffServices', StaffServicesSchema);
+const StaffServicesModel = mongoose.model<StaffProviderService>('StaffServices', StaffServicesSchema);
 
-export { StaffServicesModel, IproviderServices };
+export { StaffServicesModel, StaffProviderService };

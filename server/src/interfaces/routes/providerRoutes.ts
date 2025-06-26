@@ -25,9 +25,17 @@ import {
     providerEditPersonal,
     providerEditAddress,
     providerPasswordReset,
-    listingServiceForStaff
+    listingServiceForStaff,
+    servicesAndSubcategories,
+    getSubcategoriesByServiceId
 } from "../controllers/ProviderController";
 import {bookingList} from "../controllers/OrderController"
+import {saveStaffServices} from "../controllers/StaffController"
+import {addOffer,
+  offerList,
+offerBlockUnblock,
+editOffer
+} from "../controllers/OfferCouponController"
 import { protectedRoute } from "../../middlewares/authMiddleware";
 
 router.get("/customersList", protectedRoute, getAllCustomers);
@@ -54,7 +62,13 @@ router.patch("/providerEditPersonal", protectedRoute, providerEditPersonal);
 router.patch("/providerEditAddress", protectedRoute, providerEditAddress);
 router.post("/providerPasswordReset",protectedRoute, providerPasswordReset);
 router.get("/bookingList",protectedRoute, bookingList);
-
+router.post("/saveStaffServices", protectedRoute, saveStaffServices);
+router.get('/servicesAndSubcategories',protectedRoute, servicesAndSubcategories);
+router.get('/getSubcategoriesByServiceId/:serviceId',protectedRoute, getSubcategoriesByServiceId);
+router.post("/addOffer",protectedRoute, addOffer);
+router.get("/offerList", protectedRoute, offerList);
+router.patch("/offerBlockUnblock/:id", protectedRoute, offerBlockUnblock);
+router.post("/editOffer", protectedRoute,editOffer);
 
 
 

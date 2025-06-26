@@ -27,7 +27,7 @@ export class CustomerRepositoryImpl implements ICustomerRepository {
     const skip = (page - 1) * limit;
     const providers = await UserModel.find({
       role: { $in: ["provider", "worker"] },
-      type:{$ne:"staff"}
+      type: { $ne: "staff" },
     })
       .sort({ createdAt: -1 })
       .skip(skip)
@@ -124,7 +124,11 @@ export class CustomerRepositoryImpl implements ICustomerRepository {
 
       // Unwind providerServices so each doc is one service per provider
       pipeline.push({ $unwind: "$providerServices" });
-
+      pipeline.push({
+        $match: {
+          "providerServices.status": "Active",
+        },
+      });
       // Filter by serviceId or mainServiceId (only if valid)
       if (serviceId && mongoose.Types.ObjectId.isValid(serviceId)) {
         pipeline.push({
@@ -157,6 +161,11 @@ export class CustomerRepositoryImpl implements ICustomerRepository {
         },
       });
       pipeline.push({ $unwind: "$userDetails" });
+      pipeline.push({
+        $match: {
+          "userDetails.status": "Active",
+        },
+      });
       if (providerId && mongoose.Types.ObjectId.isValid(providerId)) {
         pipeline.push({
           $match: {

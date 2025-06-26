@@ -33,8 +33,9 @@ export class EditProviderServiceUseCase {
           throw err;
         }
       }
-      
-    const updated = await this.providerServiceRepo.editProviderService(id, {
+       let savdata
+      if(data.status){
+       savdata ={
       serviceId: data.serviceId ,
       subcategoryId:data.subcategoryId,
       description:data.description,
@@ -42,7 +43,25 @@ export class EditProviderServiceUseCase {
       status: data.status,
       image:data.image,
       updatedBy: admin.id,
-    });
+       amountPerHour:data.amountPerHour,
+         averageTimeInHours:data.averageTimeInHours,
+         totalAmount:data.totalAmount
+    }
+  }else{
+      savdata ={
+      serviceId: data.serviceId ,
+      subcategoryId:data.subcategoryId,
+      description:data.description,
+      features:data.features,
+     
+      image:data.image,
+      updatedBy: admin.id,
+       amountPerHour:data.amountPerHour,
+         averageTimeInHours:data.averageTimeInHours,
+         totalAmount:data.totalAmount
+    }
+  }
+    const updated = await this.providerServiceRepo.editProviderService(id, savdata);
 
     return updated;
   }

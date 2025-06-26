@@ -40,7 +40,6 @@ export const providerSubServices = async (req: Request, res: Response) => {
     const adminId=admin.id
   const { serviceid = null, coordinates = null, mainServiceId = null,providerId=null } = req.body || {};
 
-   console.log(serviceid,mainServiceId,coordinates+"main serviceid")
     const servicesFetch = container.resolve(ProviderServicesInLocation);
     const services = await servicesFetch.execute(mainServiceId,serviceid,coordinates,providerId);
 

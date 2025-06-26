@@ -23,6 +23,8 @@ export class UserRepositoryImpl implements UserRepository {
       ...rest,
       _id: _id.toString(),
       providerId: createdUser.providerId?.toString() ?? undefined,
+        createdBy: createdUser.createdBy?.toString() ?? undefined,
+         updatedBy: createdUser.updatedBy?.toString() ?? undefined,
     };
   }
 
@@ -34,6 +36,8 @@ export class UserRepositoryImpl implements UserRepository {
       ...user,
       _id: user._id.toString(),
       providerId: user.providerId?.toString() ?? undefined,
+       createdBy: user.createdBy?.toString() ?? undefined,
+         updatedBy: user.updatedBy?.toString() ?? undefined,
     };
   }
 
@@ -45,6 +49,8 @@ export class UserRepositoryImpl implements UserRepository {
       ...user,
       _id: user._id.toString(),
       providerId: user.providerId?.toString() ?? undefined,
+       createdBy: user.createdBy?.toString() ?? undefined,
+         updatedBy: user.updatedBy?.toString() ?? undefined,
     };
   }
 
@@ -56,6 +62,8 @@ export class UserRepositoryImpl implements UserRepository {
       ...user,
       _id: user._id.toString(),
       providerId: user.providerId?.toString() ?? undefined,
+       createdBy: user.createdBy?.toString() ?? undefined,
+         updatedBy: user.updatedBy?.toString() ?? undefined,
     };
   }
 
@@ -67,6 +75,8 @@ export class UserRepositoryImpl implements UserRepository {
       ...user,
       _id: user._id.toString(),
       providerId: user.providerId?.toString() ?? undefined,
+       createdBy: user.createdBy?.toString() ?? undefined,
+         updatedBy: user.updatedBy?.toString() ?? undefined,
     };
   }
   async findByRoleAndId(id: string, role: string): Promise<boolean | null> {
@@ -89,6 +99,8 @@ export class UserRepositoryImpl implements UserRepository {
       ...user,
       _id: user._id.toString(),
       providerId: user.providerId?.toString() ?? undefined,
+       createdBy: user.createdBy?.toString() ?? undefined,
+         updatedBy: user.updatedBy?.toString() ?? undefined,
     };
   }
   async emailVerification(
@@ -257,7 +269,7 @@ export class UserRepositoryImpl implements UserRepository {
 ): Promise<StaffListResponse> {
   const skip = (page - 1) * limit;
   const result = await UserModel.aggregate([
-    { $match: { type: "staff" } },
+    { $match: { type: "staff",providerId:new mongoose.Types.ObjectId(adminId) } },
 
     {
       $lookup: {
@@ -456,6 +468,8 @@ export class UserRepositoryImpl implements UserRepository {
       ...rest,
       _id: _id.toString(),
       providerId: updatedUser.providerId?.toString() ?? undefined,
+       createdBy: updatedUser.createdBy?.toString() ?? undefined,
+         updatedBy: updatedUser.updatedBy?.toString() ?? undefined,
     };
   }
 
@@ -481,6 +495,8 @@ export class UserRepositoryImpl implements UserRepository {
       ...user,
       _id: user._id.toString(),
       providerId: user.providerId?.toString() ?? undefined,
+       createdBy: user.createdBy?.toString() ?? undefined,
+         updatedBy: user.updatedBy?.toString() ?? undefined,
     };
   }
 
@@ -615,6 +631,8 @@ async   fetchUserById
       ...user,
       _id: user._id.toString(),
       providerId: user.providerId?.toString() ?? undefined,
+      createdBy: user.createdBy?.toString() ?? undefined,
+         updatedBy: user.updatedBy?.toString() ?? undefined,
     };
   }
 

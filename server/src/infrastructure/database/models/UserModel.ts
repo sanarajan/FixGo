@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-const { Schema, model } = mongoose;
+const { Schema, model,Document, Types } = mongoose;
 
 const userSchema = new Schema({
   fullname: { type: String,default:"" },
@@ -29,6 +29,9 @@ const userSchema = new Schema({
    verified:{type:Boolean,default: false},
 
 isCompany:{type:Boolean,default: false},
+createdBy:{type:Types.ObjectId,ref: 'User'},
+updatedBy:{type:Types.ObjectId,ref: 'User'},
+
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });

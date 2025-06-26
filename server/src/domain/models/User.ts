@@ -17,5 +17,8 @@ export interface User {
   verified?:boolean;
   createdAt?: Date;
   updatedAt?: Date;
+  createdBy?:string | ObjectId;
+    updatedBy?:string | ObjectId;
+
   image?:string|null
 }

@@ -19,7 +19,6 @@ import {
 } from "../../infrastructure/database/models/ServiceModel";
 
 import { SubcategoryModel } from "../../infrastructure/database/models/SubcategoryModel";
-// import { exit } from "process";
 
 interface CustomError extends Error {
   status?: number;

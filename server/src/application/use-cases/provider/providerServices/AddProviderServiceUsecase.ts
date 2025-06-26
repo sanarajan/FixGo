@@ -23,8 +23,8 @@ export class AddProviderServiceUsecase {
        (error as any).status = 400;
        throw error;
      }   
- 
 
+ 
      const servicedata = {
          serviceId: data.serviceId,
          subcategoryId:subcategory,
@@ -32,7 +32,11 @@ export class AddProviderServiceUsecase {
          features:data.features,
          status: data.status,
          image:data.image,
-         createdBy: userAdmin.id
+         createdBy: userAdmin.id,
+         amountPerHour:data.amountPerHour,
+         averageTimeInHours:data.averageTimeInHours,
+         totalAmount:data.totalAmount
+
        };
 
        const createdService = await this.providerServiceRepo.addProviderService(servicedata);

@@ -51,6 +51,7 @@ export class AddStaffUsecase {
     user.role = "provider";
     user.providerId = adminId;
     user.status = "Active";
+    user.createdBy=adminId
     if (!user.fullname || user.fullname.trim() === "") {
       user.username = "";
     } else {
