@@ -5,41 +5,44 @@ import adminAxiosClient from "../../../api/adminAxiosClient";
 import { User } from "../../../types/User";
 import AddEditService from "../../../components/popups/services/AddEditService";
 import StatusConfirmPopup from "../../../components/popups/tools/StatusConfirmPopup";
-import VerifyUser from "../../../components/popups/staffs/VerifyUser"
+import VerifyUser from "../../../components/popups/staffs/VerifyUser";
 import { useLocation } from "react-router-dom";
-
+import RejectReasonPopup from "../../../components/popups/verifyStaff/RejectReasonPopup"
 interface providerProps {
   userType: string;
 }
 const ProvidersStaffs = ({ userType }: providerProps) => {
   const location = useLocation();
-    const providerId = location.state.providerId;
+  const providerId = location.state.providerId;
   const [staffs, setStaffs] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [busy, setBusy]             = useState(false);
-  const [page, setPage]             = useState(1);
+  const [busy, setBusy] = useState(false);
+  const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [totCount,setTotCount]      = useState(0);
+  const [totCount, setTotCount] = useState(0);
 
   useEffect(() => {
     fetchUsers();
   }, [page]);
-  const refresh = () => fetchUsers();  
+  const refresh = () => fetchUsers();
 
   const fetchUsers = async () => {
     try {
-      const response = await adminAxiosClient.get(`/api/admin/providersStaffs`,{
-  params: {
-    page,
-    limit: 3,
-    providerId, // your id value
-  }},);
-    setStaffs(response.data.customers); 
+      const response = await adminAxiosClient.get(
+        `/api/admin/providersStaffs`,
+        {
+          params: {
+            page,
+            limit: 3,
+            providerId, // your id value
+          },
+        }
+      );
+      setStaffs(response.data.customers);
 
-   setTotalPages(response.data.totalPages); 
-    setTotCount(response.data.totalCount)
-    console.log("filteredUsers", response.data); // ✅ This will now log properly
-
+      setTotalPages(response.data.totalPages);
+      setTotCount(response.data.totalCount);
+      console.log("filteredUsers", response.data); // ✅ This will now log properly
     } catch (error) {
       //  console.error('Error fetching users:', error);
       setStaffs([]);
@@ -49,21 +52,15 @@ const ProvidersStaffs = ({ userType }: providerProps) => {
   };
   const filteredUsers = staffs;
   if (searchTerm) {
-    
- let filteredUsers = staffs;
+    let filteredUsers = staffs;
 
-if (searchTerm) {
-  filteredUsers = staffs.filter((user) =>
-    user.username?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-}
+    if (searchTerm) {
+      filteredUsers = staffs.filter((user) =>
+        user.username?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
 
-console.log("last filer", staffs); // ✅ This will now log properly
-
-
-
-
-
+    console.log("last filer", staffs); // ✅ This will now log properly
   }
   return (
     <AdminLayout>
@@ -75,8 +72,9 @@ console.log("last filer", staffs); // ✅ This will now log properly
         pagesize={3}
         totalPages={totalPages}
         totCount={totCount}
+        userType="admin"
         busy={busy}
-         imagePath="providerServices/"
+        imagePath="providerServices/"
         headings={[
           { key: "image", label: "Image", type: "image" },
           { key: "fullname", label: "Name" },
@@ -84,8 +82,8 @@ console.log("last filer", staffs); // ✅ This will now log properly
           { key: "email", label: "Email" },
           { key: "phone", label: "Mobile" },
           { key: "status", label: "Status", type: "status" },
-           { key: "verified", label: "Verify", type: "verified" },
-         ]}
+          { key: "verified", label: "Verify", type: "verified" },
+        ]}
         showSubcategory={false}
         showActions={["view", "blockUnblock"]}
         actionConfig={{
@@ -98,11 +96,16 @@ console.log("last filer", staffs); // ✅ This will now log properly
             component: StatusConfirmPopup,
             params: { api: "/api/admin/blockUnblockProvider" },
           },
-           verify: {
-              type: "popup",
-              component: VerifyUser,
-              params: { api: "/api/admin/verifyStaff" },
-            },
+          verify: {
+            type: "popup",
+            component: VerifyUser,
+            params: { api: "/api/admin/verifyStaff" },
+          },
+          reject: {
+            type: "popup",
+            component: RejectReasonPopup, // create this
+            params: { api: "/api/admin/rejectStaff" },
+          },
         }}
         refresh={refresh}
       />

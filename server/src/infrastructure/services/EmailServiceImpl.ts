@@ -29,12 +29,38 @@ export class EmailServiceImpl implements EmailService {
     return true
   }
 
-  public async sendGenericEmail(to: string, subject: string, text: string): Promise<void> {
+ public async rejectVerify(user:string,email: string, content: string): Promise<boolean> {
+    const subject = `Staff ${user} Rejected by Admin`;
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; background-color: #f8f9fa; padding: 20px;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.05);">
+          <h2 style="color: #dc3545;">Application Status: Rejected</h2>
+          <p>Dear <strong>sir</strong>,</p>
+          <p>We regret to inform you that  verification of your staff <strong>${user}</strong> has been <strong>rejected by the administrator</strong>.</p>
+          
+          <h4 style="color: #333;">Reason for Rejection:</h4>
+          <div style="background-color: #f1f1f1; padding: 12px 16px; border-left: 4px solid #dc3545; margin-bottom: 20px;">
+            <p style="margin: 0;">${content}</p>
+          </div>
+
+          <p>If you believe this decision was made in error or you would like to reapply, please feel free to contact us.</p>
+          
+          <p style="margin-top: 30px;">Best regards,<br><strong>Admin Team</strong></p>
+        </div>
+      </div>
+    `;
+
+    const send= await this.sendGenericEmail(email, subject, html);
+    console.log(send+" send")
+    return true
+  }
+  public async sendGenericEmail(to: string, subject: string, html: string): Promise<void> {
     const mailOptions = {
       from: process.env.GMAIL_USERNAME,
       to,
       subject,
-      text,
+      html,
     };
 
     await this.transporter.sendMail(mailOptions);

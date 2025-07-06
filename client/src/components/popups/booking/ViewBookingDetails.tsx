@@ -2,11 +2,16 @@ import React, { useEffect, useState } from "react";
 import ProviderLayout from "../../providerLayout/ProviderLayout";
 import { useParams } from "react-router-dom";
 import axiosClient from "../../../api/axiosClient";
-import { IOrder } from "../../../providers/pages/bookings/OrderInterface";
-
+import { OrderInterface } from "../../../interface/OrderInterface";
+import LocationPicker from "../../../components/LocationPicker/LocationPicker";
+import Bookings from "../../../providers/pages/bookings/Bookings";
+const mapStyle = {
+  width: "100%",
+  height: "150px",
+};
 // Accept props for popup usage:
 interface ViewBookingDetailsProps {
-  data?: IOrder;
+  data?: OrderInterface;
   mode?: "view";
   setShowPopup?: () => void; // to close popup if needed
 }
@@ -17,7 +22,7 @@ const ViewBookingDetails: React.FC<ViewBookingDetailsProps> = ({
   setShowPopup,
 }) => {
   const { id } = useParams<{ id: string }>();
-  const [booking, setBooking] = useState<IOrder | null>(data ?? null);
+  const [booking, setBooking] = useState<OrderInterface | null>(data ?? null);
   const [loading, setLoading] = useState(false);
 
   console.log(JSON.stringify(booking, null, 2) + "  orders");
@@ -33,6 +38,7 @@ const ViewBookingDetails: React.FC<ViewBookingDetailsProps> = ({
   } else {
     img = `${API}/uploads/${imagePath}${booking?.customerId.image}`;
   }
+ console.log(booking?.amount);
   const bookingContent = (
     <div className="fixed inset-0 flex justify-center items-center bg-[#c8c6e459] backdrop-blur-sm bg-opacity-20 z-50  p-4">
       <div className="overflow-y-auto max-h-screen w-full max-w-5xl mx-auto p-6 bg-white rounded-2xl shadow-[0_12px_24px_rgba(0,0,0,0.15)] relative">
@@ -52,9 +58,9 @@ const ViewBookingDetails: React.FC<ViewBookingDetailsProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Customer Info */}
           <div className="border border-gray-200 rounded-xl p-4 shadow-sm bg-[#f9f9fb] flex gap-4 items-start">
-            {booking?.customerId?.profileImage && (
+            {booking?.customerId?.image && (
               <img
-                src={booking.customerId.profileImage}
+                src={img}
                 alt="Customer"
                 className="w-16 h-16 rounded-full object-cover border"
               />
@@ -135,7 +141,10 @@ const ViewBookingDetails: React.FC<ViewBookingDetailsProps> = ({
               Time & Date Slot
             </h3>
             <p>
-              <strong>Date:</strong> {booking?.slot.date}
+              <strong>Date:</strong>{" "}
+              {booking?.slot.date
+                ? new Date(booking.slot.date).toLocaleDateString()
+                : "N/A"}
             </p>
             <p>
               <strong>Time Slot:</strong> {booking?.slot.time}
@@ -157,36 +166,70 @@ const ViewBookingDetails: React.FC<ViewBookingDetailsProps> = ({
           </div>
 
           {/* Billing Details */}
+          {/* Billing Details */}
+<div className="border border-gray-200 rounded-xl p-4 shadow-sm bg-[#f9f9fb]">
+  <h3 className="text-lg font-semibold mb-2 text-[#7879CA]">Billing Details</h3>
+
+  <p>
+    <strong>Service Price:</strong> ₹{booking?.amount.total ?? 0}
+  </p>
+
+  <p>
+    <strong>Invoice Amount (After Discount):</strong> ₹{booking?.amount.invoiceAmount ?? 0}
+  </p>
+
+  {/* Offer/Coupon Section */}
+  {(booking?.amount.discountSource ) && (
+    <>
+      <h3 className="text-lg font-semibold mt-3 mb-1 text-[#7879CA]">
+        {booking.amount.discountSource === "offer" ? "Offer Details" : "Coupon Details"}
+      </h3>
+      <p>
+        <strong>Name:</strong> {booking.amount.discountName || "N/A"}
+      </p>
+      <p>
+        <strong>Type:</strong> {booking.amount.offerType || "N/A"}
+      </p>
+      <p>
+        <strong>Value:</strong>{" "}
+        {booking.amount.offerType === "percentage"
+          ? `${booking.amount.offerValue}%`
+          : `₹${booking.amount.offerValue}`}
+      </p>
+      <p>
+        <strong>Discount Applied:</strong> ₹{booking.amount.discount ?? 0}
+      </p>
+    </>
+  )}
+
+  {/* Payment */}
+  <h3 className="text-lg font-semibold mt-4 mb-2 text-[#7879CA]">
+    Payment Breakdown
+  </h3>
+  <p>
+    <strong>Advance Paid:</strong> ₹{booking?.amount.advancePaid ?? 0}
+  </p>
+  <p className="font-bold text-lg">
+    <strong>Remaining:</strong> ₹
+    {(booking?.amount.invoiceAmount ?? 0) - (booking?.amount.advancePaid ?? 0)}
+  </p>
+</div>
+
+          {/* Location Map */}
           <div className="border border-gray-200 rounded-xl p-4 shadow-sm bg-[#f9f9fb]">
             <h3 className="text-lg font-semibold mb-2 text-[#7879CA]">
-              Billing Details
+              Service Location
             </h3>
-            <p>
-              <strong>Offer Price:</strong> ₹
-              {booking?.amount.total - booking?.amount.offertValue ?? 0}
-            </p>
-            <p>
-              <strong>Service Price:</strong> ₹{booking?.amount.total ?? 0}
-            </p>
-            <h3 className="text-lg font-semibold mt-2 mb-2 text-[#7879CA]">
-              Total Paid
-            </h3>
-            <p>
-              <strong>Advance Paid:</strong> ₹{booking?.amount.advancePaid ?? 0}
-            </p>
-            <p className="font-bold text-lg ">
-              <strong>Reamining:</strong> ₹
-              {booking?.amount.invoiceAmount - booking?.amount.advancePaid ?? 0}
-            </p>
-          </div>
-
-          {/* Total Paid */}
-          <div className="border border-gray-200 rounded-xl p-4 shadow-sm bg-[#f9f9fb] flex flex-col justify-center">
-            <h3 className="text-lg font-semibold mb-2 text-[#7879CA]">
-              Profile
-            </h3>
-            <img src={img}   className="w-32 h-32 object-cover rounded-full border mx-auto"
- />
+            <div className="w-full h-60 rounded-lg overflow-hidden pointer-events-none">
+              <LocationPicker
+                mapStyle={mapStyle}
+                coordinates={{
+                  lat: booking?.latitude ?? 0,
+                  lng: booking?.longitude ?? 0,
+                }}
+                onLocationSelect={() => {}} // No interaction
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -225,9 +268,7 @@ const ViewBookingDetails: React.FC<ViewBookingDetailsProps> = ({
   if (mode === "view") {
     // Popup mode
     return (
-      <div
-        className="fixed inset-0 flex justify-center items-center bg-[#c8c6e459]  z-50"
-      >
+      <div className="fixed inset-0 flex justify-center items-center bg-[#c8c6e459]  z-50">
         {bookingContent}
       </div>
     );

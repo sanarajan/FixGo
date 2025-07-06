@@ -3,13 +3,14 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../redux/Store";
 import { logout } from "../../utils/LogoutHelper"
 import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 const CustomerHeader: React.FC = () => {
  const user = useSelector((state: RootState) => state.user.user);
 const isAuthenticated = useSelector((state: RootState) => state.user.isAuthenticated);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 const dispatch = useDispatch();
-
+const navigate= useNavigate()
   //   const imageURL = `${API}/asset/saloon.webp`;
 
   const toggleDropdown = () => {
@@ -17,7 +18,7 @@ const dispatch = useDispatch();
   };
 
   const handleProfile = () => {
-    console.log("Profile clicked");
+    navigate("/profile"); // Assuming you have a Navigate function or useNavigate hook
     // Navigate to profile page, example: navigate('/profile');
     setDropdownOpen(false);
   };

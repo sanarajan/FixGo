@@ -4,10 +4,10 @@ export interface IOrderAmount {
   total: number;
   advancePaid: number;
   invoiceAmount: number;
-  discount: number;
-  remaining: number;
-  offertYype?: string;
-  offertValue: number;
+  discount?: number;
+  remaining?: number;
+ offerType?: "percentage" | "price"|"";
+  offertValue?: number;
   refferralCode?: string;
 }
 
@@ -62,4 +62,5 @@ export interface IOrder {
   current: boolean;
   createdBy: string;
   updatedBy: string;
+  
 }

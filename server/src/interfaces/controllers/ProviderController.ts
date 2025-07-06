@@ -284,8 +284,10 @@ export const editStaff = async (req: Request, res: Response): Promise<void> => {
     const admin = (req as any).user;
     const providerid = admin.id;
     const id = req.params.id;
-    const data = { ...req.body };
+    const rejectedFlag = req.body.rejected === "true";
 
+    const data = { ...req.body };
+console.log(JSON.stringify(data,null,2)+" edit data")
     if (req.file) {
       data.image = req.file.filename;
     }
@@ -328,7 +330,8 @@ export const editStaff = async (req: Request, res: Response): Promise<void> => {
       location,
       coords,
       id,
-      oldServices
+      oldServices,
+      rejectedFlag  
     );
 
     res.status(200).json(addStaffdata);
@@ -364,11 +367,9 @@ export const saveProfileImage = async (
     if (req.file) {
       image = req.file.filename;
     }
-    console.log("ETHUNNUND" + image);
 
     const profile = container.resolve<SaveProfileUsecase>(SaveProfileUsecase);
     const result = await profile.execute(id, image);
-    console.log(result + "in contr image");
     res.status(200).json({ result });
   } catch (err) {
     const e = err as CustomError;
@@ -472,9 +473,8 @@ export const providerPasswordReset = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { password } = req.body;
+    const { currentPassword,password } = req.body;
     const admin = (req as any).user;
-    console.log(" reached" + admin);
 
     const id = admin.id;
 
@@ -484,12 +484,11 @@ export const providerPasswordReset = async (
         .json({ message: "Password must be at least 6 characters long" });
       return;
     }
-    console.log(id + "  id und");
 
     const resetPasswordUseCase = container.resolve(
       ProviderResetPasswordUsecase
     );
-    const success = await resetPasswordUseCase.execute(password, id);
+    const success = await resetPasswordUseCase.execute(currentPassword,password, id);
 
     if (success) {
       res.status(200).json({ message: "Password updated successfully" });

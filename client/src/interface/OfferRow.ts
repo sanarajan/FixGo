@@ -3,7 +3,7 @@ export interface OfferRow {
   serviceId: { serviceName: string };
   subcategoryId?: { subcategory: string };
   offerFor: "subcategory" | "service";
-  offerType: "percentage" | "fixed";
+  offerType: "percentage" | "price";
   offerValue: number;
   startDate: string;
   endDate: string;

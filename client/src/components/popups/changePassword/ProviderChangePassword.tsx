@@ -4,12 +4,13 @@ import { getRoleFromPath } from "../../../utils/RoleHelper";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ResetPasswordValidation } from "../../resetPassword/ResetPasswordValidation";
-import {logout} from "../../../utils/LogoutHelper"
+import { logout } from "../../../utils/LogoutHelper";
 
 type ProviderChangePasswordProps = {
   close: () => void;
 };
 export interface passwordData {
+  currentPassword: string;
   password: string;
   confirmPassword: string;
 }
@@ -21,6 +22,7 @@ const ProviderChangePassword = ({ close }: ProviderChangePasswordProps) => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<ValidationResult["errors"]>({});
   const [formData, setFormData] = useState<passwordData>({
+    currentPassword: "",
     password: "",
     confirmPassword: "",
   });
@@ -49,25 +51,25 @@ const ProviderChangePassword = ({ close }: ProviderChangePasswordProps) => {
     }
 
     try {
-    
-     const userType = "provider"
-const formPayload = new FormData();
-formPayload.append("password", formData.password);
-        const response = await axiosClient.post(
+      const userType = getRoleFromPath();
+      const formPayload = new FormData();
+      formPayload.append("password", formData.password);
+      formPayload.append("currentPassword", formData.currentPassword);
+      const response = await axiosClient.post(
         `/api/provider/providerPasswordReset`,
-      formPayload,
+        formPayload,
         {
           headers: { "Content-Type": "application/json", userRole: userType },
         }
       );
 
       if (response.status === 200) {
-        setFormData({ password: "", confirmPassword: "" });
+        setFormData({ currentPassword: "", password: "", confirmPassword: "" });
         setErrors({});
         toast.success("Password updated successfully..");
-         setTimeout(() => {
-                    logout("provider");
-                  }, 1000);
+        setTimeout(() => {
+          logout("provider");
+        }, 1000);
       } else {
         toast.error("Failed to reset password. Please try again.");
       }
@@ -104,8 +106,22 @@ formPayload.append("password", formData.password);
 
         <div className="p-6 space-y-4">
           <label className="text-sm font-semibold px-2 py-3">
-            Service name
+            Current password
           </label>
+          <input
+            type="password"
+            name="currentPassword"
+            placeholder="Current Password"
+            className="w-full px-4 py-3 bg-gray-100 rounded-lg text-sm"
+            value={formData.currentPassword}
+            onChange={handleInputChange}
+          />
+          {errors["currentPassword"] && (
+            <p className="text-sm text-red-500 -mt-2">
+              {errors["currentPassword"]}
+            </p>
+          )}
+          <label className="text-sm font-semibold px-2 py-3">Password</label>
           <input
             type="text"
             name="password"

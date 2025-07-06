@@ -14,23 +14,38 @@ export const create_checkout_session = async (
   res: Response
 ): Promise<void> => {
   try {
+            console.log("reche")
+
     const { ordrData, savingOrder } = req.body;
-    const { amount, serviceId } = ordrData;
+        console.log("reche"+ordrData)
+
+    let { amount, serviceId } = ordrData;
+
     const admin = (req as any).user;
     const customerId = admin.id;
+console.log("Request Reached Controller");
+console.log("ordrData:", ordrData);
+console.log("savingOrder:", savingOrder);
+console.log("amount:", amount);
+console.log("customerId:", customerId);
+console.log("serviceId:", serviceId);
 
     savingOrder.customerId = customerId;
     savingOrder.createdBy = customerId;
-
     if (!amount || !customerId || !serviceId) {
+        console.log("Missing Fields:", { amount, customerId, serviceId });
       res.status(400).json({ error: "Missing required fields" });
       return;
     }
+    
 
-    if (amount < 50) {
-      res.status(400).json({ error: "Minimum payment amount is ₹50." });
-      return;
-    }
+    amount = Number(ordrData.amount); // Ensure it's number
+if (isNaN(amount) || amount < 50) {
+  console.log("Blocked too small amount", amount);
+   res.status(400).json({ error: "Minimum payment amount is ₹50." });
+    return;
+}
+
 
     const services = container.resolve(CreateCheckoutSessionUseCase);
     const url = await services.execute({
@@ -42,9 +57,13 @@ export const create_checkout_session = async (
 
     console.log("reach last");
     res.json({ url });
-  } catch (error) {
+  } catch (error:any) {
     console.error("PaymentController Error:", error);
-    res.status(500).send("Internal Server Error");
+  if (error?.raw?.code === "amount_too_small") {
+    res.status(400).json({ error: "Minimum payment amount is ₹50." });
+  } else {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
   }
 };
 

@@ -8,9 +8,9 @@ import { getNestedValue } from "../../utils/NestedKeyHelper";
 export interface Heading<T> {
   key: string;
   label: string;
-  type?: "image" | "status" | "text" | "button"| "verified"|"date";
-  
-   format?: (row: T) => string;
+  type?: "image" | "status" | "text" | "button" | "verified" | "date";
+
+  format?: (row: T) => string;
 }
 
 interface ActionConfigItem {
@@ -32,9 +32,17 @@ interface TableListProps<T> {
   userType?: string;
 
   // allservices?:T[]
-  headings: Heading<T>[]; 
+  headings: Heading<T>[];
   showSubcategory: boolean;
-  showActions?: ("add"|"view" | "edit" | "delete" | "blockUnblock"|"verify")[];
+  showActions?: (
+    | "add"
+    | "view"
+    | "edit"
+    | "delete"
+    | "blockUnblock"
+    | "verify"
+    | "reject"
+  )[];
 
   actionConfig: {
     add?: ActionConfigItem;
@@ -42,13 +50,13 @@ interface TableListProps<T> {
     view?: ActionConfigItem;
     blockUnblock?: ActionConfigItem;
     delete?: ActionConfigItem; // ← NEW
-    verify?:ActionConfigItem
+    verify?: ActionConfigItem;
+    reject?: ActionConfigItem;
   };
   extraProps?: Record<string, any>;
   refresh?: () => void; // NEW
   imagePath?: string;
-    handleStaffClick?: (providerId: string) => void;
-
+  handleStaffClick?: (providerId: string) => void;
 }
 
 interface ServiceData {
@@ -57,7 +65,14 @@ interface ServiceData {
   [key: string]: any;
 }
 
-type PopupType = "add" | "edit" | "view" | "blockUnblock" | "delete"|"verify";
+type PopupType =
+  | "add"
+  | "edit"
+  | "view"
+  | "blockUnblock"
+  | "delete"
+  | "verify"
+  | "reject";
 
 interface PopupState<T> {
   type: PopupType;
@@ -82,16 +97,21 @@ const TableList = <T extends Record<string, any>>({
   extraProps = {},
   refresh,
   imagePath,
-  handleStaffClick
+  handleStaffClick,
 }: TableListProps<T>) => {
- 
-
   const [popupState, setPopupState] = useState<PopupState<T> | null>(null);
 
   const [formData, setFormData] = useState({ name: "", status: "Active" });
   const navigate = useNavigate();
   const handleAction = (
-    action: "add" | "edit" | "view" | "blockUnblock" | "delete" |"verify",
+    action:
+      | "add"
+      | "edit"
+      | "view"
+      | "blockUnblock"
+      | "delete"
+      | "verify"
+      | "reject",
     item?: T
   ) => {
     const config = actionConfig[action];
@@ -114,7 +134,7 @@ const TableList = <T extends Record<string, any>>({
     const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
       setPage(value);
     };
-   
+
     return (
       <Popup
         imagePath={imagePath}
@@ -156,7 +176,7 @@ const TableList = <T extends Record<string, any>>({
       );
     }
     if (heading.type === "status" && showActions?.includes("blockUnblock")) {
-      console.log(" yes it is status")
+      console.log(" yes it is status");
       return (
         <span
           onClick={() => handleAction("blockUnblock", data)}
@@ -174,8 +194,7 @@ const TableList = <T extends Record<string, any>>({
         return (
           <button
             className="bg-blue-500 text-white px-2 py-1 rounded text-xs"
-           onClick={() => handleStaffClick?.(data._id)}
-
+            onClick={() => handleStaffClick?.(data._id)}
           >
             Staffs
           </button>
@@ -184,32 +203,102 @@ const TableList = <T extends Record<string, any>>({
         return <span className="text-gray-400 text-xs">No Staff</span>;
       }
     }
-if (heading.type === "verified") {
-   const isVerified =
-    value === true ||
-    value === "true" || // string version
-    value === "Verified" ||
-    value === 1 ||
-    value === "1";
+    if (heading.type === "verified") {
+      const isVerified = data.verified === true;
+      const isRejected = !!data.rejectionReason;
+      const needsReverification = data.needsReverification === true;
+      const isProvider = userType === "provider";
+      const isAdmin = userType === "admin";
 
-  return (
-    <span
-      onClick={() => {
-        if (!isVerified) {
-          handleAction("verify", data); // or call your verify function
-        }
-      }}
-      className={`px-2 py-1 text-xs font-semibold rounded-full cursor-pointer ${
-        isVerified ? "bg-green-500 pointer-events-none" : "bg-yellow-500 hover:bg-yellow-600"
-      } text-white`}
-    >
-      {isVerified ? "Verified" : "Not Verified"}
-    </span>
-  );
-}
-if (heading.format) {
-  return heading.format(data);
-}
+      //  1. Verified status for both roles
+      if (isVerified) {
+        return (
+          <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-500 text-white pointer-events-none">
+            Verified
+          </span>
+        );
+      }
+
+      // 2. Rejected but not updated yet (Admin sees only Rejected)
+      if (isRejected && isAdmin && !needsReverification) {
+        return (
+          <span
+            className="px-2 py-1 text-xs font-semibold rounded-full bg-red-500 text-white pointer-events-none"
+            title={`Rejected: ${data.rejectionReason}`}
+          >
+            Rejected
+          </span>
+        );
+      }
+
+      //  3. Rejected, but provider has updated (Admin sees verify + reject)
+      if (isRejected && isAdmin && needsReverification) {
+        return (
+          <div className="space-x-2">
+            <button
+              onClick={() => handleAction("verify", data)}
+              className="bg-green-500 text-white text-xs px-2 py-1 rounded"
+            >
+              Verify
+            </button>
+            <button
+              onClick={() => handleAction("reject", data)}
+              className="bg-red-500 text-white text-xs px-2 py-1 rounded"
+            >
+              Reject
+            </button>
+          </div>
+        );
+      }
+
+      //  4. Pending state
+      if (isAdmin && !isVerified && !isRejected) {
+        return (
+          <div className="space-x-2">
+            <button
+              onClick={() => handleAction("verify", data)}
+              className="bg-green-500 text-white text-xs px-2 py-1 rounded"
+            >
+              Verify
+            </button>
+            <button
+              onClick={() => handleAction("reject", data)}
+              className="bg-red-500 text-white text-xs px-2 py-1 rounded"
+            >
+              Reject
+            </button>
+          </div>
+        );
+      }
+
+      // For provider (Rejected clickable button)
+      if (isRejected && isProvider) {
+        return (
+          <button
+            onClick={() =>
+              navigate("/provider/editStaff", {
+                state: { ...data, rejected: true },
+              })
+            }
+            className="cursor-pointer px-2 py-1 text-xs font-semibold rounded-full bg-red-500 text-white"
+            title={`Rejected: ${data.rejectionReason}`}
+          >
+            Rejected
+          </button>
+        );
+      }
+
+      // ⏳ Default Pending for provider
+      return (
+        <span className="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-400 text-white pointer-events-none">
+          Pending
+        </span>
+      );
+    }
+
+    if (heading.format) {
+      return heading.format(data);
+    }
     return <>{value}</>;
   };
 
@@ -279,14 +368,17 @@ if (heading.format) {
                               👁️
                             </button>
                           )}
-                          {showActions?.includes("edit") && (
-                            <button
-                              className="text-blue-500"
-                              onClick={() => handleAction("edit", item)}
-                            >
-                              ✏️
-                            </button>
-                          )}
+                          {showActions?.includes("edit") &&
+                            !(
+                              userType === "provider" && item.rejectionReason
+                            ) && (
+                              <button
+                                className="text-blue-500"
+                                onClick={() => handleAction("edit", item)}
+                              >
+                                ✏️
+                              </button>
+                            )}
                           {showActions?.includes("delete") && (
                             <button
                               onClick={() => handleAction("delete", item)}

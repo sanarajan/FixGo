@@ -19,8 +19,8 @@ export class ProviderAddressEditUsecase {
   ): Promise<User> {
     // Create user
     user.role = "provider";
-    user.providerId = adminId;
-    user.status = "Active";
+    // user.providerId = adminId;
+    // user.status = "Active";
     if (adminId) {
       const existingAddress =
         await this.userRepository.getCurrentAddressByUserId(adminId);
@@ -36,7 +36,7 @@ export class ProviderAddressEditUsecase {
         id = existingAddress._id;
       }
 
-      if (!isSameLocation) {      console.log(" not same address")
+      if (!isSameLocation) {     
 
         const addressData: Partial<Iaddresses> = {
           ...(id ? { _id: id } : {}),

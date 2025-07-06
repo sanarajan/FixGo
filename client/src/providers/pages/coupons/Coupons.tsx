@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import ProviderLayout from "../../../components/providerLayout/ProviderLayout";
 import TableList from "../../../components/tableList/TableList";
 import axiosClient from "../../../api/axiosClient";
-import {OfferRow} from "../../../interface/OfferRow";
+import { CouponFormData } from "../../../interface/CouponInterface";
 import StatusConfirmPopup from "../../../components/popups/tools/StatusConfirmPopup";
 import ViewOfferPopup from "../offers/ViewOffer";
 
@@ -11,7 +11,7 @@ interface CustomersProps {
 }
 
 const Offers = ({ userType }: CustomersProps) => {
-  const [offers, setOffers] = useState<any[]>([]);
+  const [coupons, setCoupons] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [busy, setBusy] = useState(false);
   const [page, setPage] = useState(1);
@@ -28,113 +28,108 @@ const Offers = ({ userType }: CustomersProps) => {
     setBusy(true);
     try {
       const response = await axiosClient.get(
-        `/api/provider/offerList?page=${page}&limit=5`,
+        `/api/provider/couponList?page=${page}&limit=5`,
         {
           headers: {
             userRole: userType,
           },
         }
       );
-      setOffers(response.data.offers);
+      setCoupons(response.data.coupons);
       setTotalPages(response.data.totalPages);
       setTotCount(response.data.totalCount);
     } catch (error) {
       console.error("Error fetching offers:", error);
-      setOffers([]);
+      setCoupons([]);
     } finally {
       setBusy(false);
     }
   };
 
   // Optional filtering
-  const filteredOffers = offers.filter((offer) => {
-    const service = offer?.serviceId?.serviceName || "";
-    const subcategory = offer?.subcategoryId?.subcategory || "";
-    return (
-      service.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      subcategory.toLowerCase().includes(searchTerm.toLowerCase())
+    const filterCoupons = coupons;
+
+   if (searchTerm) {
+    const filterCoupons = coupons.filter((coupon) =>
+      coupon.couponName.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  });
+  }
   return (
     <ProviderLayout>
-     <TableList<OfferRow>
-  data={filteredOffers}
-  onSearch={setSearchTerm}
-  page={page}
-  setPage={setPage}
-  pagesize={5}
-  totalPages={totalPages}
-  totCount={totCount}
-  busy={busy}
-  refresh={refresh}
-  imagePath="providerServices/"
-  headings={[
-    { key: "providerServiceId.image", label: "Image", type: "image" },
-     { key: "offerName", label: "Name", type: "text" },
-    {
-      
-      key: "serviceId.serviceName",
-      label: "Service / Subcategory",
-      format: (row: OfferRow) =>
-        row.offerFor === "subcategory"
-          ? `${row.serviceId?.serviceName} / ${row.subcategoryId?.subcategory}`
-          : row.serviceId?.serviceName,
-    },
-    {
-      key: "offerValue",
-      label: "Offer",
-      format: (row: OfferRow) =>
-        row.offerType === "percentage"
-          ? `${row.offerValue}%`
-          : `₹${row.offerValue}`,
-    },
-    { key: "startDate", label: "Start Date", type: "date", 
-      format: (row: OfferRow) =>
-        row.startDate
-          ? `${row.startDate.split("T")[0]}`
-          : `` },
-    { key: "endDate", label: "End Date", type: "date",
-       format: (row: OfferRow) =>
-        row.endDate
-          ? `${row.endDate.split("T")[0]}`
-          : ``
-     },
-   {
-  key: "status",
-  label: "Status",
-  type: "status",
-  format: (row: OfferRow) => {
-    const { status, startDate, endDate } = row;
-
-    if (status !== "Active") return "Inactive";
-
-    const now = new Date();
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-
-    const isInRange = now >= start && now <= end;
-
-    return isInRange ? "Active" : "Inactive";
+      <TableList<CouponFormData>
+        data={filterCoupons}
+        onSearch={setSearchTerm}
+        page={page}
+        setPage={setPage}
+        pagesize={5}
+        totalPages={totalPages}
+        totCount={totCount}
+        busy={busy}
+        refresh={refresh}
+        imagePath="providerServices/"
+       headings={[
+  { key: "couponImage", label: "Image", type: "image" },
+  { key: "couponName", label: "Coupon Name", type: "text" },
+  {
+    key: "startDate",
+    label: "Start Date",
+    type: "date",
+    format: (row: CouponFormData) =>
+      row.startDate ? `${row.startDate.split("T")[0]}` : ``,
   },
-}
-,
-  ]}
-  showSubcategory={false}
-  showActions={["add","view", "edit", "blockUnblock"]}
-  actionConfig={{
-    add: { type: "page", path: "/provider/addCoupon" },
-    edit: { type: "page", path: "/provider/addCoupon" },
-    view: {
-      type: "popup",
-      component: ViewOfferPopup,
+  {
+    key: "endDate",
+    label: "End Date",
+    type: "date",
+    format: (row: CouponFormData) =>
+      row.endDate ? `${row.endDate.split("T")[0]}` : ``,
+  },
+  { key: "minPurchase", label: "Minimum Purchase", type: "text" },
+  { key: "discountType", label: "Type", type: "text" },
+  {
+    key: "discountValue",
+    label: "Value",
+    type: "text",
+    format: (row: CouponFormData) => {
+      return row.discountType === "percentage"
+        ? `${row.discountPercentage}%`
+        : `₹${row.discountValue}`;
     },
-     blockUnblock: {
+  },
+  {
+    key: "status",
+    label: "Status",
+    type: "status",
+    format: (row: CouponFormData) => {
+      const { status, startDate, endDate } = row;
+
+      if (status !== "Active") return "Inactive";
+
+      const now = new Date();
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+
+      return now >= start && now <= end ? "Active" : "Inactive";
+    },
+  },
+]}
+
+        showSubcategory={false}
+        showActions={["add", "view", "edit", "blockUnblock"]}
+        actionConfig={{
+          add: { type: "page", path: "/provider/addCoupon" },
+          edit: { type: "page", path: "/provider/EditCoupon" },
+          view: {
+            type: "popup",
+            component: ViewOfferPopup,
+          },
+          blockUnblock: {
             type: "popup",
             component: StatusConfirmPopup,
             params: { api: "/api/provider/offerBlockUnblock" },
           },
-  }}
-/>
+        }}
+      />
     </ProviderLayout>
   );
 };

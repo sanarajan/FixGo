@@ -38,6 +38,8 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
   });
   const location = useLocation();
   const staffItem = location.state;
+  let rejected =false;
+ rejected = location.state.rejected;
   const verified = staffItem.verified;
   const [selectedServices, setSelectedServices] = useState<{
     [key: string]: string[];
@@ -232,13 +234,20 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async () => {  
     const { isValid, errors } = validateForm(formData);
     let serviceValid;
-    if (isStaffVerified) {
+    if (isStaffVerified) {     
+
       if (formData.verified) {
         serviceValid = isServiceSelectionValid(selectedServices);
+      }   
+       if (!serviceValid && formData.verified) {
+        setFormErrors(errors);
+        toast.error("Please select services");
+        return;
       }
+    }
       const finalLocation = locationAddress ?? formData.location;
       if (!isValid) {
         setFormErrors(errors);
@@ -246,16 +255,11 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
         return;
       }
       // if (!serviceValid &&isStaffVerified) {
-      if (!serviceValid && formData.verified) {
-        setFormErrors(errors);
-        toast.error("Please select services");
-        return;
-      }
+     
       if (!finalLocation) {
         toast.error("Location is required");
         return;
       }
-
       const orgService = staffItem.staffServices || [];
       const changeService = hasDataChanged(orgService, selectedServices);
 
@@ -265,12 +269,14 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
       formPayload.append("fullname", formData.fullname);
       formPayload.append("email", formData.email);
       formPayload.append("username", "");
+formPayload.append("rejected", rejected.toString());
 
       formPayload.append("phone", formData.phone);
       formPayload.append("type", "staff");
       formPayload.append("location", finalLocation ?? "");
       formPayload.append("latitude", coordinates?.lat.toString() ?? "");
       formPayload.append("longitude", coordinates?.lng.toString() ?? "");
+
 
       if (formData.image) formPayload.append("image", formData.image);
       // if (changeService &&isStaffVerified) {
@@ -299,7 +305,7 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
         console.error("Error updating staff:", err);
         toast.error("An error occurred while updating staff");
       }
-    }
+   
   };
 
   const handleLocationSelect = (coords: {

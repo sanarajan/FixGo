@@ -10,7 +10,7 @@ import LocationAutocomplete from "../../../components/LocationPicker/LocationAut
 import axios, { AxiosError } from "axios";
 import ProviderChangePassword from "../../../components/popups/changePassword/ProviderChangePassword"
 import { useDispatch } from "react-redux";
-import { updateUserImage,updateFullname } from "../../../redux/UserSlice"; 
+import { updateProviderImage,updateProviderFullname } from "../../../redux/ProviderSlice"; 
 interface profileProp {
   userType: string;
 }
@@ -62,12 +62,11 @@ const ProfilePage = ({ userType }: profileProp) => {
 
         const imagePath = "providerServices/";
         let img
-        if(!img){
+        if(!data.image){
           img=  `${API}/asset/noimage.png`
         }else{
             img = `${API}/uploads/${imagePath}${data.image}`;
         }
-       
         setImageUrl(
          img
         );
@@ -168,7 +167,7 @@ const ProfilePage = ({ userType }: profileProp) => {
         }
       );
       if (response.status === 200) {
-                dispatch(updateUserImage(response.data.result));
+                dispatch(updateProviderImage(response.data.result));
        
            toast.success("Staff updated successfully");
       
@@ -249,7 +248,7 @@ const ProfilePage = ({ userType }: profileProp) => {
           [section]: false,
         }));
          if(response.data){
-                   dispatch(updateFullname(response.data?.fullname));
+                   dispatch(updateProviderFullname(response.data?.fullname));
                 }
       } else {
         toast.error("Failed to update. Please try again.");
@@ -280,7 +279,6 @@ const ProfilePage = ({ userType }: profileProp) => {
         location: "",
       }));
     }
-    console.log(coords.lat+" profilepage loc function")
   };
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

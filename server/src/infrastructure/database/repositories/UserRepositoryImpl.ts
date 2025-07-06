@@ -362,6 +362,8 @@ export class UserRepositoryImpl implements UserRepository {
         providerId: 1,
         username: 1,
         staffServices: 1,
+        lastReviewedByAdmin:1,
+        rejectionReason:1,
         "address.location": "$currentAddress.location",
         "address.longitude": "$currentAddress.longitude",
         "address.latitude": "$currentAddress.latitude",
@@ -405,7 +407,6 @@ export class UserRepositoryImpl implements UserRepository {
  
 
     const staffs = result[0].data;
-    console.log(JSON.stringify(staffs,null,2)+" staffs")
     const count = result[0].totalCount[0]?.count || 0;
     // console.log(JSON.stringify(staffs.services, null, 2));
     return {
@@ -614,7 +615,6 @@ if (!mongoose.Types.ObjectId.isValid(id.trim())) {
     ]);
     const staffs = result[0];
    
-    console.log(JSON.stringify(staffs[0], null, 2));
     return {
     ...staffs,
     _id: staffs._id?.toString(),
@@ -693,7 +693,12 @@ async   fetchUserById
         role: 1,
         providerId: 1,
         username: 1,
-        verified:1,
+          verified:1,       
+        staffServices: 1,
+        lastReviewedByAdmin:1,
+        rejectionReason:1,
+        needsReverification:1,
+        providerSeen:1,
         "address.location": "$currentAddress.location",
         "address.longitude": "$currentAddress.longitude",
         "address.latitude": "$currentAddress.latitude",
@@ -717,7 +722,6 @@ async   fetchUserById
  
 
     const staffs = result[0].data;
-    console.log(JSON.stringify(staffs,null,2)+" staffs")
     const count = result[0].totalCount[0]?.count || 0;
     return {
       data: staffs.map((staff: any) => ({
@@ -727,4 +731,102 @@ async   fetchUserById
       totalCount: count,
     };
   } 
+
+
+  
+  async showCustomer(
+   
+    id:string
+
+  ): Promise<User | null> {
+    const result = await UserModel.aggregate([
+      { $match: { _id: new mongoose.Types.ObjectId(id)} },   
+
+   
+      {
+        $lookup: {
+          from: "addresses",
+          let: { userId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ["$userId", "$$userId"] },
+                    { $eq: ["$current", true] },
+                  ],
+                },
+              },
+            },
+            { $project: { location: 1, longitude: 1, latitude: 1, _id: 0 } },
+          ],
+          as: "address",
+        },
+      },
+      {
+        $addFields: {
+          currentAddress: { $arrayElemAt: ["$address", 0] },
+        },
+      },
+
+      {
+        $project: {
+          _id: 1,
+          fullname: 1,
+          email: 1,
+          phone: 1,
+          image: 1,
+          status: 1,
+          role: 1,
+          providerId: 1,
+          username: 1,        
+          "address.location": "$currentAddress.location",
+          "address.longitude": "$currentAddress.longitude",
+          "address.latitude": "$currentAddress.latitude",       
+         
+        },
+      },
+     
+    ]);
+
+    const staffs = result[0];
+   
+    return {
+    ...staffs,
+    _id: staffs._id?.toString(),
+  } as User;
+  } 
+
+async updateStaffRejection(id: string, reason: string): Promise<void> {
+  await UserModel.findByIdAndUpdate(id, {
+    verified: false,
+    rejectionReason: reason,
+    needsReverification: false,
+    lastReviewedByAdmin: new Date(),
+    adminSeen: true,
+    providerSeen: false,
+  });
+}
+
+
+async findById(id: string): Promise<User | null> {
+  if (!Types.ObjectId.isValid(id.trim())) {
+    return null;
+  }
+
+  const user = await UserModel.findById(id).lean();
+
+  if (!user) return null;
+
+  return {
+    ...user,
+    _id: user._id.toString(),
+    providerId: user.providerId?.toString(),
+    createdBy: user.createdBy?.toString(),  // ✅ Ensure string or undefined
+    updatedBy: user.updatedBy?.toString(),  // ✅ Same here
+  };
+}
+
+
+
 }

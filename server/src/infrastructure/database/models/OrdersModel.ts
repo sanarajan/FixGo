@@ -3,20 +3,38 @@ import { Iaddresses } from "../../../domain/models/Iaddresses";
 import { time, timeStamp } from "console";
 import { IOrder } from "../../../domain/models/IOrder";
 
-
 const OrdersSchema: Schema = new Schema(
   {
     workerId: { type: String, ref: "User", required: true },
     customerId: { type: Types.ObjectId, ref: "User", required: true },
     providerId: { type: Types.ObjectId, ref: "User", required: true },
     serviceId: { type: Types.ObjectId, ref: "Service", required: true },
-    subcategoryId: { type: Types.ObjectId, ref: "Subcategories", required: true },
-    providerServiceId:{ type: Types.ObjectId, ref: "ProviderService", required: true },
-    
-    cartId: { type: Types.ObjectId, ref: "Cart" }, // if used
+    subcategoryId: {
+      type: Types.ObjectId,
+      ref: "Subcategories",
+      required: true,
+    },
+    providerServiceId: {
+      type: Types.ObjectId,
+      ref: "ProviderService",
+      required: true,
+    },
+    serviceName: { type: String },
+    subcategoryName: { type: String },
+    providerName: { type: String },
+    serviceImage: { type: String },
+    providerImage: { type: String },
+    cartId: { type: Types.ObjectId, ref: "Cart" },
     paymentStatus: {
       type: String,
-      enum: ["Pending","advance paid", "Cancelled","Paid", "Refunded","Failed"],
+      enum: [
+        "Pending",
+        "advance paid",
+        "Cancelled",
+        "Paid",
+        "Refunded",
+        "Failed",
+      ],
       default: "Pending",
     },
     bookingStatus: {
@@ -31,19 +49,29 @@ const OrdersSchema: Schema = new Schema(
       invoiceAmount: { type: Number, default: 0 },
       discount: { type: Number, default: 0 },
       remaining: { type: Number, default: 0 },
-      offertYype: {
+      offerType: {
         type: String,
+        enum: ["percentage", "price", ""],
+        default: "",
       },
-      offertValue: { type: Number, default: 0 },
-      refferralCode: { type: String, default: ""}
+        discountName: { type: String, default: "" }, // Offer or coupon name
+      offerValue: { type: Number, default: 0 },//% or amount value
+      referralCode: { type: String, default: "" },
+       discountSource: {
+    type: String,
+    enum: ["offer", "coupon", ""],
+    default: "",
+  },
     },
+    
+
     slot: {
       date: { type: Date, required: true },
-  time: { type: String, required: true }, // e.g., "10:00 AM"
+      time: { type: String, required: true }, // e.g., "10:00 AM"
     },
     bookingAddress: { type: String, required: true },
     cancellation: {
-      allowedTill: { type: Date, required: true }, 
+      allowedTill: { type: Date, required: true },
       refunded: { type: Boolean, default: false },
       refundAmount: { type: Number, default: 0 },
       refundTo: {
@@ -58,7 +86,7 @@ const OrdersSchema: Schema = new Schema(
     },
     statusHistory: [
       {
-        status: { type: String },//booking status history
+        status: { type: String }, //booking status history
         at: { type: Date, default: Date.now },
         reason: { type: String, default: "" }, // Optional reason for status change
       },

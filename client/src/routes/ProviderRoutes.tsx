@@ -22,7 +22,10 @@ import  Offers from "../providers/pages/offers/Offers"
 import AddOffer from "../providers/pages/offers/AddOffer";
 import EditOffer from "../providers/pages/offers/EditOffer";
 import Coupons from "../providers/pages/coupons/Coupons";
-import AddCoupon from "../providers/pages/coupons/AddCoupon"
+import AddCoupon from "../providers/pages/coupons/AddCoupon";
+import EditCoupon from "../providers/pages/coupons/EditCoupon";
+
+
 const ProviderRoutes = () => {
   return (
     <div>
@@ -126,6 +129,10 @@ const ProviderRoutes = () => {
          <Route
           path="/addCoupon"
           element={<AddCoupon />}
+        />
+         <Route
+          path="/editCoupon"
+          element={<EditCoupon />}
         />
         
       </Routes>

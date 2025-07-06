@@ -45,7 +45,7 @@ const Bookings = ({ userType }: CustomersProps) => {
 
   const filteredUsers = searchTerm
     ? bookings.filter((bookng) =>
-       bookng.customerId.toLowerCase().includes(searchTerm.toLowerCase())
+        bookng.customerId.fullname.toLowerCase().includes(searchTerm.toLowerCase())
       )
     : bookings;
 
@@ -62,21 +62,21 @@ const Bookings = ({ userType }: CustomersProps) => {
         busy={busy}
         refresh={refresh}
         imagePath="providerServices/"
-       headings={[
-  { key: "customerId.fullname", label: "Customer" },
-  { key: "workerId", label: "Worker ID" }, // just display string workerId
-  { key: "serviceId.serviceName", label: "Service" },
-  { key: "subcategoryId.subcategory", label: "Subcategory" },
-  { key: "paymentStatus", label: "Pay Status", type: "paymentStatus" },
-  { key: "bookingStatus", label: "Book Status", type: "bookingStatus" },
-  { key: "bookingAddress", label: "Address" },
-]}
-
+        headings={[
+          { key: "customerId.fullname", label: "Customer" },
+          { key: "customerId.phone", label: "Phone" }, // just display string workerId
+          { key: "customerId.email", label: "Email" },
+          { key: "serviceId.serviceName", label: "Service" },
+          { key: "subcategoryId.subcategory", label: "Subcategory" },
+          { key: "paymentStatus", label: "Pay Status", type: "paymentStatus" },
+          { key: "bookingStatus", label: "Book Status", type: "bookingStatus" },
+          { key: "bookingAddress", label: "Address" },
+        ]}
         showSubcategory={false}
         showActions={["view", "edit", "blockUnblock"]}
         actionConfig={{
-        //   add: { type: "page", path: "/provider/addStaff" },
-          edit: { type: "page", path: "/provider/editStaff" },
+          //   add: { type: "page", path: "/provider/addStaff" },
+          // edit: { type: "page", path: "/provider/editStaff" },
           view: { type: "popup", component: ViewBookingDetails },
           blockUnblock: {
             type: "popup",

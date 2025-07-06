@@ -70,3 +70,20 @@ export function validatePersonalFields(
   return { isValid, errors };
 }
 
+
+export const validatePositiveNumber = (
+  value: any,
+  fieldName: string,
+  allowZero: boolean = true
+): string => {
+  if (value === null || value === "") return `${fieldName} is required`;
+
+  const num = Number(value);
+  if (isNaN(num)) return `${fieldName} must be a number`;
+
+  if (!allowZero && num === 0) return `${fieldName} must be greater than 0`;
+  if (num < 0) return `${fieldName} cannot be negative`;
+
+  return "";
+};
+

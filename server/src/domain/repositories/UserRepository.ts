@@ -59,5 +59,9 @@ providersStaffList(
     limit?: number,
     providerId?:string
   ): Promise<{ data: User[]; totalCount: number }>;
+  showCustomer(id: string): Promise<User | null>;
+
+findById(id: string): Promise<User | null>;
+  updateStaffRejection(id: string, reason: string): Promise<void>;
 
 }

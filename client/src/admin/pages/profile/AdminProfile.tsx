@@ -13,7 +13,7 @@ import LocationAutocomplete from "../../../components/LocationPicker/LocationAut
 import axios, { AxiosError } from "axios";
 import ProviderChangePassword from "../../../components/popups/changePassword/ProviderChangePassword";
 import { useDispatch } from "react-redux";
-import { updateUserImage, updateFullname } from "../../../redux/UserSlice";
+import { updateAdminImage, updateAdminFullname } from "../../../redux/AdminSlice";
 interface profileProp {
   userType: string;
 }
@@ -170,7 +170,7 @@ const AdminProfile = ({ userType }: profileProp) => {
       );
       if (response.data) {
         console.log(response.data.result);
-        dispatch(updateUserImage(response.data.result));
+        dispatch(updateAdminImage(response.data.result));
         toast.success("Staff updated successfully");
       } else {
         toast.error("Failed to update staff. Please try again.");
@@ -250,7 +250,7 @@ const AdminProfile = ({ userType }: profileProp) => {
           [section]: false,
         }));
         if(response.data){
-           dispatch(updateFullname(response.data?.fullname));
+           dispatch(updateAdminFullname(response.data?.fullname));
         }
       } else {
         toast.error("Failed to update. Please try again.");

@@ -1,14 +1,19 @@
 import React, { useState } from "react";
 import CustomerLayoutWithSidebar from "../../../components/customerLayout/CustomerLayoutWithSidebar";
 import { useLocation } from "react-router-dom";
-import { IOrder } from "../../../interface/OrderInterface";
+import { IOrder } from "../../../providers/pages/bookings/OrderInterface";
 import { getStatusStyle } from "../../../utils/StatusHelper";
-
+import LocationPicker from "../../../components/LocationPicker/LocationPicker";
+const mapStyle = {
+  width: "100%",
+  height: "150px",
+};
 const BookingDetails = () => {
   const location = useLocation();
   const bookingDetail = location.state.booking;
   const [bookings, setBooking] = useState<IOrder>(bookingDetail);
   const imagePath = "providerServices/";
+
   let imageURL = "";
   const API = import.meta.env.VITE_API_URL;
 
@@ -73,6 +78,26 @@ const BookingDetails = () => {
                   </div>
                 </div>
               </div>
+              {/* Location Map View */}
+              {bookings?.latitude && bookings?.longitude && (
+                <div className="bg-[#ECEBF2] p-3 rounded-xl shadow-md hover:scale-[1.02] hover:-translate-y-1 transition-all">
+                  <div className="bg-white p-4 rounded-xl">
+                    <h3 className="font-semibold text-gray-700 mb-1 uppercase">
+                      Location on Map
+                    </h3>
+                    <div className="w-full h-45 rounded-xl overflow-hidden">
+                      <LocationPicker
+                        mapStyle={mapStyle}
+                        coordinates={{
+                          lat: bookings.latitude,
+                          lng: bookings.longitude,
+                        }}
+                        onLocationSelect={() => {}}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* About Houseman (Customer Info) */}
               <div className="bg-[#ECEBF2] p-3 rounded-xl shadow-md hover:scale-[1.02] hover:-translate-y-1 transition-all">
@@ -157,16 +182,17 @@ const BookingDetails = () => {
                     Price Details
                   </h3>
                   <div className="text-sm text-gray-700 space-y-1">
+                    
                     <div className="flex justify-between">
-                      <span>Price</span>
-                      <span>₹{bookings?.amount?.invoiceAmount}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Sub Total</span>
+                      <span>Total Price</span>
                       <span>₹{bookings?.amount?.total}</span>
                     </div>
+                    <div className="flex justify-between">
+                      <span>Discount price</span>
+                      <span>₹{bookings?.amount?.invoiceAmount}</span>
+                    </div>
                     <div className="flex justify-between text-green-600">
-                      <span>Discount ({bookings?.amount?.offertYype})</span>
+                      <span>Discount ({bookings?.amount?.offerType})</span>
                       <span>-₹{bookings?.amount?.discount}</span>
                     </div>
                     <div className="flex justify-between text-gray-400">
@@ -174,7 +200,7 @@ const BookingDetails = () => {
                       <span>₹{bookings?.amount?.advancePaid}</span>
                     </div>
                     <div className="flex justify-between font-bold text-[#6060B8] border-t pt-2">
-                      <span>Total Amount</span>
+                      <span>Remaining to Pay</span>
                       <span>₹{bookings?.amount?.remaining}</span>
                     </div>
                     <div className="flex justify-between text-sm">

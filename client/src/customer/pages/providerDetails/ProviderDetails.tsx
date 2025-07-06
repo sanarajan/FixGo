@@ -12,7 +12,6 @@ interface Service {
   providerServiceId: string;
   providerServiceImg?: string;
   subcategoryId: string;
-
   image?: string;
   subcategoryName?: string;
   description?: string;
@@ -54,7 +53,6 @@ const ProviderDetails: React.FC = () => {
       let data;
       if (response.status === 200) {
         data = await response.data;
-
         if (response.status === 200 && Array.isArray(response.data.services)) {
           setSubservices(
             response.data.services.map((item: any) => ({
@@ -81,13 +79,10 @@ const ProviderDetails: React.FC = () => {
   };
 
   const API = import.meta.env.VITE_API_URL;
-
   const imagePath = "providerServices/";
   let imageURL = "";
-
   imageURL = `${API}/uploads/${imagePath}`;
-
-  let noimg = "noimage.png";
+  let noimg = `${API}/asset/noimage.png`;
   providerImage = imageURL + providerImage;
   return (
     <CustomerLayout>

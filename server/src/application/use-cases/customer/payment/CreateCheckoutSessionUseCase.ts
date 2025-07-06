@@ -19,6 +19,7 @@ export class CreateCheckoutSessionUseCase {
   }): Promise<string> {
 
     data.savingOrder.workerId = generateWorkerId();
+    console.log(JSON.stringify(data.savingOrder,null,2)+"  dats orders")
  const saveOrder = await this.orderRepo.saveOrder(data.savingOrder);
 
     const url = await this.paymentService.createCheckoutSession({

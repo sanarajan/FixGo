@@ -27,9 +27,15 @@ const PaymentSuccess: React.FC = () => {
           </p>
           <button
             onClick={() => navigate('/')} // adjust route as needed
-            className="bg-[#7879CA] hover:bg-[#5b5da6] text-white font-semibold px-6 py-3 rounded-md transition"
+            className="bg-[#7879CA] hover:bg-[#5b5da6] text-white font-semibold px-6 py-3 me-2 rounded-md transition"
           >
             Go to Home
+          </button>
+           <button
+            onClick={() => navigate('/bookings')} // adjust route as needed
+            className="bg-[#7879CA] hover:bg-[#5b5da6] text-white font-semibold px-6 py-3 rounded-md transition"
+          >
+            your bookings
           </button>
         </div>
       </main>
