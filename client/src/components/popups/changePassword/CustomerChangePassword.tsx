@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axiosClient from "../../../api/axiosClient";
+import customerAxiosClient from "../../../api/customerAxiosClient";
 import { getRoleFromPath } from "../../../utils/RoleHelper";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -26,7 +26,6 @@ const ProviderChangePassword = ({ close }: ProviderChangePasswordProps) => {
     password: "",
     confirmPassword: "",
   });
-  const userType = getRoleFromPath();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -51,12 +50,14 @@ const ProviderChangePassword = ({ close }: ProviderChangePasswordProps) => {
     }
 
     try {
-      const userType = getRoleFromPath();
+      const userType = "customer";
       const formPayload = new FormData();
       formPayload.append("password", formData.password);
       formPayload.append("currentPassword", formData.currentPassword);
-      const response = await axiosClient.post(
-        `/api/provider/providerPasswordReset`,
+
+      console.log(JSON.stringify(formPayload) + " payload");
+      const response = await customerAxiosClient.post(
+        `/api/customerPasswordReset`,
         formPayload,
         {
           headers: { "Content-Type": "application/json", userRole: userType },

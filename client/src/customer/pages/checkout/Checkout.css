@@ -1,0 +1,32 @@
+/* CouponSection.css */
+.applied-coupon-box {
+  margin-top: 10px;
+  padding: 10px 15px;
+  border: 1px solid #4caf50;
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 350px;
+}
+
+.coupon-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.remove-coupon-btn {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.remove-coupon-btn:hover {
+  background-color: #d32f2f;
+}

@@ -1,21 +1,22 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
 import axiosClient from "../../../api/axiosClient";
 import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import ProviderLayout from "../../../components/providerLayout/ProviderLayout";
 import { validateCouponForm, getTodayDate } from "./AddCouponVlidation";
 import { CouponFormData } from "../../../interface/CouponInterface";
 
 const MAX_IMAGE_SIZE_MB = 2;
 
-const AddCoupon = () => {
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [imageValidationError, setImageValidationError] = useState<string>("");
+const EditCoupon = () => {
 
+  const navigate = useNavigate();
+  const location = useLocation();
+  const couponData = location.state as CouponFormData | undefined;
+  const id= couponData?._id
+console.log(JSON.stringify(couponData,null,2)+" id")
   const [formData, setFormData] = useState<CouponFormData>({
+    id:"",
     couponName: "",
     startDate: "",
     endDate: "",
@@ -27,42 +28,78 @@ const AddCoupon = () => {
     status: "Active",
     userUsageLimit: 1,
   });
-  const navigate = useNavigate();
+
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [existingImage, setExistingImage] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [imageValidationError, setImageValidationError] = useState<string>("");
+
+  useEffect(() => {
+    const initializeForm = (
+      coupon: CouponFormData & { couponImage?: string }
+    ) => {
+      setFormData({
+       id:coupon._id,
+        couponName: coupon.couponName,
+        startDate: coupon.startDate?.split("T")[0] || "",
+        endDate: coupon.endDate?.split("T")[0] || "",
+        description: coupon.description,
+        minPurchase: coupon.minPurchase,
+        discountType: coupon.discountType,
+        discountPercentage: coupon.discountPercentage,
+        discountValue: coupon.discountValue,
+        status: coupon.status,
+        userUsageLimit: coupon.userUsageLimit,
+      });
+
+      if (coupon.couponImage) {
+        const API = import.meta.env.VITE_API_URL;
+        const fullImagePath = `${coupon.couponImage}`;
+        setExistingImage(coupon.couponImage);
+        setPreviewUrl(fullImagePath);
+      }
+    };
+
+    if (couponData) {
+      initializeForm(couponData);
+    } else if (id) {
+      axiosClient
+        .get(`/api/provider/coupon/${id}`)
+        .then((res) => initializeForm(res.data))
+        .catch(() => toast.error("Failed to load coupon"));
+    }
+  }, [couponData, id]);
+
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >
   ) => {
     const { name, value, type } = e.target;
-
-    // Prevent non-numeric input for certain fields
     const numericFields = [
       "minPurchase",
       "discountPercentage",
       "discountValue",
       "userUsageLimit",
     ];
+
     if (numericFields.includes(name)) {
-      const regex = /^[0-9\b]*$/; // only digits
-      if (!regex.test(value)) return; // ignore if input is invalid
+      const regex = /^[0-9\b]*$/;
+      if (!regex.test(value)) return;
     }
 
     setFormData((prev) => {
-      let updated = {
+      const updated: CouponFormData = {
         ...prev,
         [name]:
           type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
       };
 
-      // Convert numbers
       if (numericFields.includes(name)) {
-        updated = {
-          ...updated,
-          [name]: value === "" ? "" : Number(value),
-        };
+        (updated as any)[name] = value === "" ? "" : Number(value);
       }
 
-      // Clear end date if new start date is after it
       if (name === "startDate" && prev.endDate && value > prev.endDate) {
         updated.endDate = "";
       }
@@ -70,36 +107,7 @@ const AddCoupon = () => {
       return updated;
     });
 
-    // Live validations
-    let errorMsg = "";
-    if (name === "minPurchase") {
-      const val = Number(value);
-      if (!isNaN(val) && val < 500)
-        errorMsg = "Minimum purchase must be at least ₹500";
-    }
-
-    if (
-      name === "discountPercentage" &&
-      formData.discountType === "percentage"
-    ) {
-      if (Number(value) > 25) errorMsg = "Discount % must be 25 or less";
-    }
-
-    if (name === "discountValue" && formData.discountType === "price") {
-      const minPurchase = Number(formData.minPurchase);
-      if (!isNaN(minPurchase) && Number(value) >= minPurchase) {
-        errorMsg = "Discount must be less than minimum purchase";
-      }
-    }
-
-    if (name === "userUsageLimit") {
-      if (Number(value) <= 0) errorMsg = "Usage limit must be greater than 0";
-    }
-
-    setErrors((prev) => ({
-      ...prev,
-      [name]: errorMsg,
-    }));
+    setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,31 +116,29 @@ const AddCoupon = () => {
 
     if (file) {
       if (!validTypes.includes(file.type)) {
-        const errMsg = "Only JPG, JPEG or PNG allowed";
-        setErrors((prev) => ({ ...prev, couponImage: errMsg }));
-        setImageValidationError(errMsg); // 👈 Track error type
-        setImageFile(null); // Clear invalid image
+        const msg = "Only JPG, JPEG, or PNG allowed";
+        setImageValidationError(msg);
+        setErrors((prev) => ({ ...prev, couponImage: msg }));
+        setImageFile(null);
         setPreviewUrl(null);
         return;
       }
 
       if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
-        const errMsg = `Image must be under ${MAX_IMAGE_SIZE_MB}MB`;
-        setErrors((prev) => ({ ...prev, couponImage: errMsg }));
-        setImageValidationError(errMsg); // 👈 Track error type
-        setImageFile(null); // Clear large image
+        const msg = `Image must be under ${MAX_IMAGE_SIZE_MB}MB`;
+        setImageValidationError(msg);
+        setErrors((prev) => ({ ...prev, couponImage: msg }));
+        setImageFile(null);
         setPreviewUrl(null);
         return;
       }
 
-      // Valid image
       setImageFile(file);
       setPreviewUrl(URL.createObjectURL(file));
+      setImageValidationError("");
       setErrors((prev) => ({ ...prev, couponImage: "" }));
-      setImageValidationError(""); // ✅ Clear custom error
     }
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -140,8 +146,9 @@ const AddCoupon = () => {
       formData,
       imageFile,
       imageValidationError,
-      false
+       true
     );
+
     if (!isValid) {
       setErrors(validationErrors);
       toast.error("Please fix the form errors");
@@ -154,74 +161,52 @@ const AddCoupon = () => {
     payload.append("startDate", formData.startDate);
     payload.append("endDate", formData.endDate);
     payload.append("discountType", formData.discountType);
-    payload.append(
-      "minPurchase",
-      formData.minPurchase === "" ? "0" : formData.minPurchase.toString()
-    );
-    payload.append(
-      "discountPercentage",
-      formData.discountPercentage === ""
-        ? "0"
-        : formData.discountPercentage.toString()
-    );
-    payload.append(
-      "discountValue",
-      formData.discountValue === "" ? "0" : formData.discountValue.toString()
-    );
-
-    payload.append("status", formData.status.toString());
-    payload.append("userUsageLimit", formData.userUsageLimit.toString());
-    if (imageFile) payload.append("couponImage", imageFile);
+    payload.append("minPurchase", String(formData.minPurchase));
+    payload.append("discountPercentage", String(formData.discountPercentage));
+    payload.append("discountValue", String(formData.discountValue));
+    payload.append("status", String(formData.status));
+    payload.append("userUsageLimit", String(formData.userUsageLimit));
+   if (imageFile) {
+  payload.append("couponImage", imageFile);
+} else if (existingImage) {
+  payload.append("couponImage", existingImage); // ✅ this is a string, not a File
+}
 
     try {
-      const res = await axiosClient.post("/api/provider/addCoupon", payload, {
+      const res = await axiosClient.patch(`/api/provider/editCoupon/${formData.id}`, payload, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      if (res.status === 200 || res.status === 201) {
-        setFormData({
-          couponName: "",
-          startDate: "",
-          endDate: "",
-          description: "",
-          minPurchase: "",
-          discountType: "percentage",
-          discountPercentage: "",
-          discountValue: "",
-          status: "Active",
-          userUsageLimit: 1,
-        });
-        setImageFile(null);
-        setPreviewUrl(null);
-        setErrors({});
-        if (res.status === 201) {
-          toast.success("Coupon created successfully");
+      if (res.status === 200) {
+        toast.success("Coupon updated successfully");
 
-          setTimeout(() => {
-            navigate("/provider/coupons");
-          }, 1000);
-        } else {
-          toast.error("Failed to create coupon");
-        }
+        setTimeout(() => {
+          navigate("/provider/coupons");
+        }, 1000);
+      } else {
+        toast.error("Failed to update coupon");
       }
     } catch (error: any) {
-      toast.error(error?.response?.data?.error || "Failed to add coupon");
+      toast.error("Unexpected error occurred", error.message);
     }
   };
+const API = import.meta.env.VITE_API_URL;
 
+  const imagePath = `${API}/uploads/providerServices/`;
+ 
   return (
     <ProviderLayout>
-      <div className="max-w-2xl mx-auto bg-gradient-to-r from-[#ecebff] via-[#f4f3ff] to-[#ffffff] text-[#333] p-6 rounded-2xl shadow-lg">
+      <div className="max-w-2xl mx-auto bg-gradient-to-r from-[#fdfcff] via-[#f0efff] to-[#ffffff] text-[#333] p-6 rounded-2xl shadow-lg">
         <ToastContainer />
         <h2 className="text-2xl font-bold mb-6 text-[#5A52A4] text-center">
-          Add Coupon
+          Edit Coupon
         </h2>
         <form
           onSubmit={handleSubmit}
-          className="space-y-4"
           encType="multipart/form-data"
+          className="space-y-4"
         >
-          {/* Image Upload */}
+          {/* Coupon Image */}
           <div>
             <label className="block font-medium mb-1">Coupon Image *</label>
             <input
@@ -233,7 +218,7 @@ const AddCoupon = () => {
             />
             {previewUrl && (
               <img
-                src={previewUrl}
+                src={previewUrl.startsWith("blob:") ? previewUrl : `${imagePath}${previewUrl}`}
                 alt="Preview"
                 className="mt-2 w-32 h-32 object-cover rounded"
               />
@@ -270,7 +255,7 @@ const AddCoupon = () => {
             />
           </div>
 
-          {/* Start and End Dates */}
+          {/* Dates */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block font-medium mb-1">Start Date *</label>
@@ -302,7 +287,7 @@ const AddCoupon = () => {
             </div>
           </div>
 
-          {/* Minimum Purchase */}
+          {/* Min Purchase */}
           <div>
             <label className="block font-medium mb-1">Minimum Purchase *</label>
             <input
@@ -326,12 +311,12 @@ const AddCoupon = () => {
               onChange={handleChange}
               className="w-full border px-4 py-2 rounded"
             >
-              <option value="percentage">Percentage (%)</option>
+              <option value="Percentage">Percentage (%)</option>
               <option value="price">Fixed Amount (₹)</option>
             </select>
           </div>
 
-          {/* Discount */}
+          {/* Discount Fields */}
           {formData.discountType === "percentage" ? (
             <div>
               <label className="block font-medium mb-1">
@@ -386,7 +371,7 @@ const AddCoupon = () => {
               type="submit"
               className="bg-[#5A52A4] text-white px-8 py-2 rounded hover:bg-[#4a4299]"
             >
-              Add Coupon
+              Update Coupon
             </button>
           </div>
         </form>
@@ -395,4 +380,4 @@ const AddCoupon = () => {
   );
 };
 
-export default AddCoupon;
+export default EditCoupon;

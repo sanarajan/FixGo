@@ -7,38 +7,156 @@ import "react-toastify/dist/ReactToastify.css";
 import LocationAutocomplete from "../../../components/LocationPicker/LocationAutocomplete";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../redux/Store";
+import CouponPopup from "../../../components/popups/coupon/CouponPopup";
+import {CouponFormData} from "../../../interface/CouponInterface";
+import "./Checkout.css";
 const Checkout: React.FC = () => {
   const user = useSelector((state: RootState) => state.user.user);
   const location = useLocation();
-  const providerServiceId = location.state?.providerServiceId || "";
   const [address, setAddress] = useState<string | null>(null);
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [showSlotModal, setShowSlotModal] = useState(false);
-  const [servicePrice, setServicePrice] = useState<number>(1500);
-  const [offerPrice, setOfferPrice] = useState<number>(1000);
-  const [serviceId, setServiceId] = useState<string | null>(location.state?.serviceId || null);
-  const [subcateId, setSubcateId] = useState<string | null>(location.state?.subcateId || null);
-  const [idProvider, setIdProvider] = useState<string | null>(location.state?.idProvider || null);
+  const [showCouponPopup, setShowCouponPopup] = useState(false);
+
+  // const [servicePrice, setServicePrice] = useState<number>(1500);
+  // const [offerPrice, setOfferPrice] = useState<number>(1000);
+  // const [serviceId, setServiceId] = useState<string | null>(
+  //   location.state?.serviceId || null
+  // );
+  // const [subcateId, setSubcateId] = useState<string | null>(
+  //   location.state?.subcateId || null
+  // );
+  // const [idProvider, setIdProvider] = useState<string | null>(
+  //   location.state?.idProvider || null
+  // );
+
   const {
+    serviceId,
+    subcateId,
+    idProvider,
+    providerServiceId,
     serviceName,
     subcategoryName,
     serviceImage,
-    
-  } = location.state || {};
-  console.log(location.state?.subcateId + " subcate");
+    providerImage,
+    originalPrice,
+    discountedPrice,
+    offerName,
+    offerType,
+    offerValue,
+    savings,
+  } = location.state;
+  const servicePrice = originalPrice;
+  // const offerPrice = discountedPrice;
+  // const tenPercentOfOffer = offerPrice * 0.1;
+  const BASE_PRICE = discountedPrice;
+
+  // const { serviceName, subcategoryName, serviceImage } = location.state || {};
   const [locationAddress, setLocationAddress] = useState<string | null>(null);
   const [coordinates, setCoordinates] = useState<{
     lat: number;
     lng: number;
   } | null>(null);
-  const tenPercentOfOffer = offerPrice * 0.1;
+  //coupon data states
+  const [offerPrice, setOfferPrice] = useState<number>(discountedPrice);
+  const [selectedCoupon, setSelectedCoupon] = useState<any | null>(null);
+  const [couponDiscount, setCouponDiscount] = useState<number>(offerValue);
+  const [finalPayableAmount, setFinalPayableAmount] =
+    useState<number>(offerPrice);
+  const [amountSaved, setAmountSaved] = useState<number>(savings);
+  const [availableCoupons, setAvailableCoupons] = useState([]);
+  const [couponCount, setCouponCount] = useState<number>();
+  const [advancePaid, setAdvancePaid] = useState<number>(offerPrice * 0.1);
+  const [discountType, setDiscountType] = useState<string>(offerType);
+  const [discountname, setDiscountName] = useState<string>(offerName);
+  const [discountSource, setDiscountSource] = useState<string>(
+    offerName ? "offer" : ""
+  );
+  const [discount, setDiscount] = useState<number>(
+    originalPrice - discountedPrice
+  );
+  const [appliedCoupon, setAppliedCoupon] = useState<CouponFormData | null>(null);
+  //  const [offer,setOffer] = useState<number>(offerValue);
+  //  const discount = originalPrice - offerPrice;
   useEffect(() => {
     if (!coordinates && !locationAddress) {
       fetchAddress();
     }
   }, [coordinates, locationAddress]);
+  useEffect(() => {
+    if (!discountType && !offerValue && idProvider) {
+      fetchCouponsForProvider(idProvider);
+    }
+  }, [discountType, offerValue, idProvider]);
+  const fetchCouponsForProvider = async (providerId: string) => {
+    try {
+      const response = await customerAxiosClient.get(
+        `/api/showCoupons/${providerId}`
+      );
+      const providerCoupons = response.data || [];
+      setAvailableCoupons(providerCoupons.coupons);
+      setCouponCount(providerCoupons.couponCount);
+    } catch (err) {
+      console.error("Failed to fetch provider coupons", err);
+    }
+  };
+  const resetCouponState = () => {
+    setSelectedCoupon(null);
+
+    setOfferPrice(BASE_PRICE);
+    setDiscount(originalPrice - BASE_PRICE); // provider offer only
+    setCouponDiscount(0);
+
+    setFinalPayableAmount(BASE_PRICE);
+    setAdvancePaid(BASE_PRICE * 0.1);
+
+    setAmountSaved(savings); // back to provider savings
+    setDiscountType(offerType);
+    setDiscountName(offerName);
+    setDiscountSource(offerName ? "offer" : "");
+  };
+  
+
+const handleRemoveCoupon = () => {
+  setAppliedCoupon(null);
+  setDiscount(0);
+  resetCouponState(); // reset totals
+};
+
+  const handleApplyCoupon = (coupon: any) => {
+    resetCouponState(); 
+
+    let disc =
+      coupon.discountType === "percentage"
+        ? (BASE_PRICE * coupon.discountPercentage) / 100
+        : coupon.discountValue;
+
+    disc = Math.min(disc, BASE_PRICE); 
+    setDiscount(disc);
+
+    const newPrice = BASE_PRICE - disc;
+    const newAdvance = newPrice * 0.1;
+    if (coupon.discountType === "percentage") {
+      setCouponDiscount(coupon.discountPercentage);
+    } else {
+      setCouponDiscount(coupon.discountValue);
+    }
+    setSelectedCoupon(coupon);
+
+    setOfferPrice(newPrice);
+    setFinalPayableAmount(newPrice);
+    setAdvancePaid(newAdvance);
+
+    setAmountSaved(savings + disc);
+    setDiscountType(coupon.discountType);
+    setDiscountName(coupon.couponName);
+    setDiscountSource("coupon");
+
+    setShowCouponPopup(false);
+    setAppliedCoupon(coupon)
+  };
 
   const fetchAddress = async () => {
     try {
@@ -101,75 +219,82 @@ const Checkout: React.FC = () => {
   const isSlotEnabled = !!address;
   const isProceedEnabled = !!address && !!selectedDate && !!selectedTime;
 
-  
   const handleProceedToPay = async () => {
-    console.log( "customerId:", user?._id,
-     " providerId:", idProvider,
-    "  serviceId:", serviceId,
-      "subcategoryId" ,subcateId)
+    console.log(
+      "customerId:",
+      user?._id,
+      " providerId:",
+      idProvider,
+      "  serviceId:",
+      serviceId,
+      "subcategoryId",
+      subcateId
+    );
     try {
-       const savingOrder = {
-     
-      customerId: user?._id,
-      providerId: idProvider,
-      serviceId: serviceId,
-      subcategoryId: subcateId,
-      providerServiceId:providerServiceId,
-      // paymentStatus: "advance paid",
-      // bookingStatus: "Pending",
-      amount: {
-        total: servicePrice,
-        advancePaid: tenPercentOfOffer,
-        invoiceAmount: offerPrice,
-        discount: servicePrice - offerPrice,
-        remaining: servicePrice - tenPercentOfOffer,
-        offertYype: "Flat", // if applicable
-        offertValue: servicePrice - offerPrice,
-        refferralCode: "", // optional
-      },
-      slot: {
-        date: selectedDate,
-        time: selectedTime,
-      },
-      bookingAddress: address,
-      cancellation: {
-        allowedTill: new Date(), // set your logic here
-        refunded: false,
-        refundAmount: 0,
-        refundTo: "customer",
-        split: {
-          admin: 0,
-          provider: 0,
+      const savingOrder = {
+        customerId: user?._id,
+        providerId: idProvider,
+        serviceId: serviceId,
+        subcategoryId: subcateId,
+        providerServiceId: providerServiceId,
+        // paymentStatus: "advance paid",
+        // bookingStatus: "Pending",
+        amount: {
+          total: servicePrice,
+          advancePaid: advancePaid,
+          invoiceAmount: offerPrice,
+          discount: discount,
+          remaining: offerPrice - advancePaid,
+          offerType: discountType,
+          offerValue: couponDiscount,
+          discountName: discountname,
+          discountSource: discountSource,
+          refferralCode: "", // optional
         },
-      },
-      statusHistory: [
-        {
-          status: "Pending",
-          at: new Date(),
-          reason: "",
+
+        slot: {
+          date: selectedDate,
+          time: selectedTime,
         },
-      ],
-      location: locationAddress,
-      geoLocation: {
-        type: "Point",
-        coordinates: [coordinates?.lng, coordinates?.lat],
-      },
-      longitude: coordinates?.lng,
-      latitude: coordinates?.lat,
-      status: "Active",
-      current: true,
-      createdBy: user?._id,
-      updatedBy: user?._id,
-    };
-    
+        bookingAddress: address,
+        cancellation: {
+          allowedTill: new Date(), // set your logic here
+          refunded: false,
+          refundAmount: 0,
+          refundTo: "customer",
+          split: {
+            admin: 0,
+            provider: 0,
+          },
+        },
+        statusHistory: [
+          {
+            status: "Pending",
+            at: new Date(),
+            reason: "",
+          },
+        ],
+        location: locationAddress,
+        geoLocation: {
+          type: "Point",
+          coordinates: [coordinates?.lng, coordinates?.lat],
+        },
+        longitude: coordinates?.lng,
+        latitude: coordinates?.lat,
+        status: "Active",
+        current: true,
+        createdBy: user?._id,
+        updatedBy: user?._id,
+      };
+
       const ordrData = {
-        amount: tenPercentOfOffer,
+        amount: advancePaid,
         serviceId: serviceId,
       };
-      console.log(JSON.stringify(savingOrder,null,2) + "datas")
+      console.log(JSON.stringify(savingOrder, null, 2) + "datas");
       const response = await customerAxiosClient.post(
         "/api/create_checkout_session",
-        {ordrData,savingOrder}
+        { ordrData, savingOrder }
       );
 
       const data = await response.data;
@@ -179,9 +304,15 @@ const Checkout: React.FC = () => {
       } else {
         alert("Failed to create checkout session");
       }
-    } catch (error) {
-      console.error("Error creating order:", error);
-      toast.error("Error creating order.");
+    } catch (error: any) {
+      console.log("Full error object:", error);
+      console.log("response.data:", error.message);
+
+      if (error.response && error.response.data && error.response.data.error) {
+        toast.error(error.response.data.error);
+      } else {
+        toast.error("Failed to create order. Please try again.");
+      }
     }
   };
 
@@ -193,9 +324,13 @@ const Checkout: React.FC = () => {
   imageURL = `${API}/uploads/${imagePath}`;
 
   let noimg = "noimage.png";
+  const remainingAmount = finalPayableAmount - advancePaid;
+
   return (
     <CustomerLayout>
       <div className="min-h-screen bg-gray-100 p-6 pb-24 relative">
+        <ToastContainer position="top-right" autoClose={3000} />
+
         <div className="flex flex-col md:flex-row gap-6 max-w-6xl mx-auto">
           {/* Left Section */}
           <div className="md:w-2/3 flex flex-col gap-4">
@@ -323,32 +458,79 @@ const Checkout: React.FC = () => {
             {/* Add-ons */}
 
             {/* Coupons */}
-            <div className="bg-white rounded-lg shadow p-5 flex justify-between items-center">
-              <h4 className="text-lg font-semibold">Coupons and offers</h4>
-              <button className="text-purple-600 font-semibold">
-                2 offers
-              </button>
-            </div>
+           {/* Coupons Section */}
+<div className="bg-white rounded-lg shadow p-5">
+  <div className="flex justify-between items-center">
+    <h4 className="text-lg font-semibold">Coupons</h4>
+    <button
+      onClick={() => setShowCouponPopup(true)}
+      className="text-purple-600 font-semibold underline"
+    >
+      {appliedCoupon ? "Change Coupon" : `View ${couponCount} Coupon${couponCount&&couponCount > 1 ? "s" : ""}`}
+    </button>
+  </div>
+
+  {appliedCoupon && (
+    <div className="bg-green-100 border border-green-300 rounded p-3 flex justify-between items-center mt-2">
+      <span className="text-sm font-medium text-green-800">
+        Applied Coupon: {appliedCoupon.couponName}
+      </span>
+      <button
+        className="text-red-600 hover:underline text-sm"
+        onClick={handleRemoveCoupon}
+      >
+        Remove
+      </button>
+    </div>
+  )}
+</div>
+
+          
+
 
             {/* Payment Summary */}
+            {/* Final Price Summary */}
             <div className="bg-white rounded-lg shadow p-5">
-              <h4 className="text-lg font-semibold mb-4">Payment summary</h4>
-              <div className="flex justify-between mb-2">
-                <p>Item total</p>
-                <p className="text-gray-600">₹100</p>
+              <h4 className="text-lg font-semibold mb-2">Payment Summary</h4>
+              <div className="flex justify-between">
+                <span>Original Price</span>
+                <span>₹{servicePrice}</span>
               </div>
-              <div className="flex justify-between mb-2">
-                <p className="text-blue-600 underline">Advance Payment</p>
-                <p className="text-gray-600">₹{tenPercentOfOffer}</p>
+              <div className="flex justify-between">
+                <span>Offer Discount</span>
+                <span className="text-green-600">-₹{discount}</span>
               </div>
-              <div className="flex justify-between mb-2 font-semibold">
-                <p>Total amount</p>
-                <p>₹{offerPrice}</p>
+              {selectedCoupon && (
+                <div className="flex justify-between">
+                  <span>Coupon Discount ({selectedCoupon.couponName})</span>
+                  <span className="text-green-600">
+                    {" "}
+                    -{discountType === "percentage" ? "%" : "₹"}
+                    {couponDiscount}
+                  </span>
+                </div>
+              )}
+              <hr className="my-2" />
+              <div className="flex justify-between font-semibold">
+                <span>Total Payable</span>
+                <span>₹{finalPayableAmount}</span>
               </div>
-              <div className="flex justify-between mb-2 font-semibold">
-                <p>Amount to pay</p>
-                <p>₹{tenPercentOfOffer}</p>
+              <div className="flex justify-between font-semibold">
+                <span>Advance to Pay</span>
+                <span>₹{advancePaid}</span>
               </div>
+
+              <div className="flex justify-between font-semibold">
+                <span>Remaining to Pay</span>
+                <span>₹{remainingAmount}</span>
+              </div>
+              <div className="flex justify-between font-semibold">
+                <span>Amount to Pay </span>
+                <span>₹{advancePaid}</span>
+              </div>
+              <p className="text-green-700 text-sm mt-1">
+                {discountType} You saved ₹{amountSaved} on this booking!
+              </p>
             </div>
           </div>
         </div>
@@ -356,9 +538,7 @@ const Checkout: React.FC = () => {
         {/* Fixed Bottom Bar */}
         <div className="fixed bottom-0 left-12 right-12 bg-white border-t border-gray-200 flex justify-between items-center px-6 py-4 shadow z-50">
           <div></div> {/* Empty left side */}
-          <p className="text-lg font-bold">
-            Amount to pay: ₹{tenPercentOfOffer}
-          </p>
+          <p className="text-lg font-bold">Amount to pay: ₹{advancePaid}</p>
         </div>
 
         {/* Address Modal */}
@@ -445,6 +625,13 @@ const Checkout: React.FC = () => {
               </div>
             </div>
           </div>
+        )}
+        {showCouponPopup && (
+          <CouponPopup
+            coupons={availableCoupons}
+            onClose={() => setShowCouponPopup(false)}
+            onApply={handleApplyCoupon}
+          />
         )}
       </div>
     </CustomerLayout>

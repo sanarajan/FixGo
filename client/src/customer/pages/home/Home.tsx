@@ -47,24 +47,23 @@ const Home: React.FC = () => {
   const [allServices, setAllServices] = useState<Service[]>(service);
   const [showServices, setShowServices] = useState<boolean>(false);
   const suggestionBoxRef = useRef<HTMLDivElement>(null);
-   const [serviceId, setServiceId] = useState<string>("");
-    const geckUser=  localStorage.getItem("customer_accessToken");
-  useEffect(() => { 
+  const [serviceId, setServiceId] = useState<string>("");
+  const geckUser = localStorage.getItem("customer_accessToken");
+  useEffect(() => {
+    if (service.length === 0 || !geckUser) fetchServices();
 
-    if (service.length === 0||!geckUser) fetchServices();
-
-  //  if (coordinates) {
-  //   defaultAddress(); // <=== triggers when coordinates updated
-  // }
+    //  if (coordinates) {
+    //   defaultAddress(); // <=== triggers when coordinates updated
+    // }
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [geckUser,service]);
+  }, [geckUser, service]);
   useEffect(() => {
-  //    if (!coordinates) {
-  //   getBrowserLocation();
-  // }
+    //    if (!coordinates) {
+    //   getBrowserLocation();
+    // }
     if (query.trim() === "") {
       setSuggestions([]);
       return;
@@ -74,38 +73,38 @@ const Home: React.FC = () => {
     );
     setSuggestions(filtered);
   }, [query, subcategories]);
-//   const defaultAddress =()=>{
-//   fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${coordinates?.lat}&lon=${coordinates?.lng}`)
-//       .then(res => res.json())
-//       .then(data => {
-//         if (data?.display_name) {
-//           setLocationAddress(data.display_name);
-//           setFormData((prev) => ({ ...prev, location: data.display_name }));
-//         }
-//       })
-//       .catch(err => {
-//         console.error("Reverse geocoding failed", err);
-//       });
-//     }
-//     const getBrowserLocation = () => {
-//   if (navigator.geolocation) {
-//     navigator.geolocation.getCurrentPosition(
-//       (position) => {
-//         const coords = {
-//           lat: position.coords.latitude,
-//           lng: position.coords.longitude,
-//         };
-//         setCoordinates(coords); // this triggers defaultAddress via useEffect
-//       },
-//       (error) => {
-//         console.error("Error getting location", error);
-//         toast.error("Unable to get your location.");
-//       }
-//     );
-//   } else {
-//     toast.error("Geolocation is not supported by this browser.");
-//   }
-// };
+  //   const defaultAddress =()=>{
+  //   fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${coordinates?.lat}&lon=${coordinates?.lng}`)
+  //       .then(res => res.json())
+  //       .then(data => {
+  //         if (data?.display_name) {
+  //           setLocationAddress(data.display_name);
+  //           setFormData((prev) => ({ ...prev, location: data.display_name }));
+  //         }
+  //       })
+  //       .catch(err => {
+  //         console.error("Reverse geocoding failed", err);
+  //       });
+  //     }
+  //     const getBrowserLocation = () => {
+  //   if (navigator.geolocation) {
+  //     navigator.geolocation.getCurrentPosition(
+  //       (position) => {
+  //         const coords = {
+  //           lat: position.coords.latitude,
+  //           lng: position.coords.longitude,
+  //         };
+  //         setCoordinates(coords); // this triggers defaultAddress via useEffect
+  //       },
+  //       (error) => {
+  //         console.error("Error getting location", error);
+  //         toast.error("Unable to get your location.");
+  //       }
+  //     );
+  //   } else {
+  //     toast.error("Geolocation is not supported by this browser.");
+  //   }
+  // };
 
   const handleClickOutside = (event: MouseEvent) => {
     if (
@@ -124,7 +123,6 @@ const Home: React.FC = () => {
       let data;
       if (response.status === 200) {
         data = await response.data;
-      
 
         if (
           response.status === 200 &&
@@ -183,7 +181,7 @@ const Home: React.FC = () => {
   const handleSelectSuggestion = async (service: Service) => {
     let id = service.id;
     setShowServices(false);
-    setServiceId(service.id)
+    setServiceId(service.id);
     setQuery(service.name);
     setSuggestions([]);
     try {
@@ -228,9 +226,8 @@ const Home: React.FC = () => {
   };
 
   const handleSubcategoryChangeClick = (id: string, subname: string) => {
-
     navigate("/subServices", {
-      state: { id, coordinates, locationAddress, subname,serviceId },
+      state: { id, coordinates, locationAddress, subname, serviceId },
     });
   };
 
@@ -252,8 +249,8 @@ const Home: React.FC = () => {
       }));
     }
   };
- const goSubcategory = (serviceId: string) => {
-    navigate("/subServices", { state: {serviceId }});
+  const goSubcategory = (serviceId: string) => {
+    navigate("/subServices", { state: { serviceId } });
   };
   const API = import.meta.env.VITE_API_URL;
 
@@ -284,13 +281,21 @@ const Home: React.FC = () => {
                 Home services at your doorstep
               </div>
               <div className="px-4 md:px-8 py-10">
+                {locationAddress && (
+                  <div className="flex items-center text-gray-700 mb-2 text-sm md:text-base">
+                    <span className="mr-2 text-blue-600 text-lg">📍</span>
+                    <span className="font-medium truncate max-w-full">
+                      {locationAddress}
+                    </span>
+                  </div>
+                )}
+
                 <div className="cursor-pointer flex flex-col md:flex-row gap-8 mb-2">
                   <LocationAutocomplete
-                    locationAddress={locationAddress || ""}
+                    locationAddress={formData.location}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                       const input = e.target.value;
-                      setLocationAddress(input);
-                      setFormData((prev) => ({ ...prev, location: input }));
+                      setFormData((prev) => ({ ...prev, location: input })); // ✅ only update input box
                     }}
                     onSelect={handleLocationSelect}
                   />
@@ -345,15 +350,15 @@ const Home: React.FC = () => {
               </div>
               <div className="bg-gray-100 rounded-xl p-6 md:p-8">
                 <div className="text-lg md:text-xl font-medium mb-4">
-                  What are you looking for?
+                  What services are you looking for?
                 </div>
                 <div className="relative">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 relative">
                     {service.slice(0, 4).map((servic, idx) => (
                       <div
-                      onClick={() => {
-                goSubcategory(servic?.id);
-              }}
+                        onClick={() => {
+                          goSubcategory(servic?.id);
+                        }}
                         key={idx}
                         className="bg-white cursor-pointer rounded-lg shadow-md p-4 flex items-center gap-2"
                       >

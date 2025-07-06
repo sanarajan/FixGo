@@ -51,7 +51,6 @@ const LocationAutocomplete: React.FC<Props> = ({ onSelect, locationAddress, onCh
     //   inputRef.current.value = locationAddress;
     // }
 if (!locationAddress&&defaultCords &&defaultAddress&& onSelect && defaultCords?.lat !== undefined && defaultCords?.lng !== undefined) {
-     console.log(" jango pettu")
   const lat =defaultCords?.lat;
       const lng =defaultCords?.lng;
      const address =defaultAddress

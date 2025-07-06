@@ -36,7 +36,13 @@ interface Service {
   description?: string;
   features?: string;
   fullname?: string;
+  totalAmount?: number;
+  discountedAmount?: number;
+  offerType?: "percentage" | "price"|"";
+  offerValue?: number;
+  offerName?: string;
 }
+
 interface SubcategoryInt {
   name: string;
   id: string;
@@ -134,20 +140,6 @@ const ProviderSubcategoryPage: React.FC = () => {
           Array.isArray(response.data.categories)
         ) {
           setSelectedSubcategories(response.data.categories);
-          // setSubservices(
-          //   response.data.services.map((item: any) => ({
-          //     name: item.serviceName,
-          //     fullname: item.fullname,
-          //     image: item.image,
-          //     id: item._id,
-          //     subcategoryName: item.subcategoryName,
-
-          //     description: item.description,
-          //     features: item.features,
-          //   }))
-          // );
-
-          // console.log(selectedSubcategories+" selected categories")
         } else {
           console.error("Fetched data is not an array:", response.data);
         }
@@ -192,8 +184,14 @@ const ProviderSubcategoryPage: React.FC = () => {
               description: item.description,
               features: item.features,
               providerservImg: item.providerservImg,
+              totalAmount: item.totalAmount,
+              discountedAmount: item.discountedAmount,
+              offerType: item.offerType,
+              offerValue: item.offerValue,
+              offerName: item.offerName,
             }))
           );
+
           setShowServices(
             response.data.services.map((item: any) => ({
               name: item.serviceName,
@@ -208,6 +206,11 @@ const ProviderSubcategoryPage: React.FC = () => {
               features: item.features,
               subcategoryName: item.subcategoryName,
               providerservImg: item.providerservImg,
+               totalAmount: item.totalAmount,
+              discountedAmount: item.discountedAmount,
+              offerType: item.offerType,
+              offerValue: item.offerValue,
+              offerName: item.offerName,
             }))
           );
         } else {
@@ -300,10 +303,6 @@ const ProviderSubcategoryPage: React.FC = () => {
     const value = e.target.value;
     setSubserviceId(value);
 
-    // 👉 Call any other functions or actions you need here
-    console.log("Subservice selected:", value);
-
-    // For example:
     fetchProviderService(value);
   };
 
@@ -314,8 +313,8 @@ const ProviderSubcategoryPage: React.FC = () => {
 
   imageURL = `${API}/uploads/${imagePath}`;
 
-  let noimg = "noimage.png";
-
+  let noimg = `${API}/asset/noimage.png`;
+  console.log(JSON.stringify(subservices, null, 2) + " sertvic");
   return (
     <CustomerLayout>
       <div className="flex relative min-h-screen bg-gradient-to-br from-gray-100 to-white p-4">
@@ -406,15 +405,14 @@ const ProviderSubcategoryPage: React.FC = () => {
             </div>
           </div>
           {/* Service Cards */}
-         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
               {subservices &&
                 subservices?.length > 0 &&
                 subservices?.map((card, idx) => (
                   <div
                     onClick={() => {
-                      navigate("/ProviderDetails", {
+                      navigate("/bookingCart", {
                         state: {
                           card,
                           providerServiceId: card.providerServiceId,
@@ -423,26 +421,59 @@ const ProviderSubcategoryPage: React.FC = () => {
                           serviceImage: card.providerservImg,
                           serviceId: mainServiceIdState,
                           subcateId: card.subcategoryId,
+                          originalPrice: card.totalAmount,
+                          discountedPrice: Math.round(
+                            card.discountedAmount || 0
+                          ),
+                          offerName: card.offerName || null,
+                          offerType: card.offerType || "",
+                          offerValue: card.offerValue || null,
                         },
                       });
                     }}
                     key={idx}
                     className="bg-white rounded-2xl p-5 cursor-pointer transition-transform transform hover:-translate-y-1 shadow-[0_8px_20px_rgba(0,0,0,0.15)] hover:shadow-[0_12px_28px_rgba(0,0,0,0.2)]"
-
                   >
                     <img
                       src={card.image ? imageURL + "/" + card.image : noimg}
                       alt={card.image}
                       className="w-full h-48 object-cover rounded-xl"
                     />
+
                     <div className="mt-3 flex justify-between items-center">
                       <span className="text-yellow-500 font-semibold text-sm">
                         ★ 4.0
                       </span>
-                      <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-medium shadow-sm">
-                        ₹100
-                      </span>
+
+                      {/* Show original and discounted prices if applicable */}
+                      <div className="text-right">
+                        {card.discountedAmount &&
+                        card.discountedAmount !== card.totalAmount ? (
+                          <>
+                            <div className="text-sm text-gray-500 line-through">
+                              ₹{card.totalAmount}
+                            </div>
+                            <div className="text-purple-700 font-semibold text-sm">
+                              ₹{card.discountedAmount}
+                            </div>
+                          </>
+                        ) : (
+                          <div className="text-purple-700 font-semibold text-sm">
+                            ₹{card.totalAmount}
+                          </div>
+                        )}
+                      </div>
                     </div>
+
+                    {/* Display offer info below description */}
+                    {card.offerValue && card.offerType && (
+                      <div className="text-green-600 text-xs font-medium mt-2">
+                        {card.offerType === "percentage"
+                          ? `${card.offerValue}% Off`
+                          : `₹${card.offerValue} Off`}{" "}
+                        {card.offerName ? `- ${card.offerName}` : ""}
+                      </div>
+                    )}
 
                     <h3 className="mt-2 font-semibold text-base text-gray-800 truncate">
                       <span className="text-purple-600 font-medium uppercase text-xs tracking-wide">

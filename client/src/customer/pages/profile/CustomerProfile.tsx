@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FaEdit } from "react-icons/fa";
-import AdminLayout from "../../../components/AdminLayout/AdminLayout";
+import CustomerLayoutWithSidebar from "../../../components/customerLayout/CustomerLayoutWithSidebar";
 import LocationPicker from "../../../components/LocationPicker/LocationPicker";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -11,15 +11,18 @@ import {
 import axiosClient from "../../../api/axiosClient";
 import LocationAutocomplete from "../../../components/LocationPicker/LocationAutocomplete";
 import axios, { AxiosError } from "axios";
-import ProviderChangePassword from "../../../components/popups/changePassword/ProviderChangePassword";
+import CustomerChangePassword from "../../../components/popups/changePassword/CustomerChangePassword";
 import { useDispatch } from "react-redux";
-import { updateAdminImage, updateAdminFullname } from "../../../redux/AdminSlice";
+import { updateUserImage, updateFullname } from "../../../redux/UserSlice";
+import customerAxiosClient from "../../../api/customerAxiosClient";
+
 interface profileProp {
   userType: string;
 }
 
 type SectionKey = "personal" | "email" | "phone" | "address";
-const AdminProfile = ({ userType }: profileProp) => {
+const CustomerProfile = () => {
+    const userType ="customer"
   const API = import.meta.env.VITE_API_URL;
   const [coordinates, setCoordinates] = useState<{
     lat: number;
@@ -54,15 +57,11 @@ const AdminProfile = ({ userType }: profileProp) => {
   }, []);
   const fetchUserData = async () => {
     try {
-      const response = await axiosClient.get(`/api/provider/providerProfile`, {
-        headers: {
-          userRole: userType,
-        },
-      });
+      const response = await customerAxiosClient.get(`/api/customerProfile`
+      );
       let data;
       if (response.status === 200) {
         data = await response.data.user;
-
         const imagePath = "providerServices/";
         let img;
         if (!data.image) {
@@ -160,7 +159,7 @@ const AdminProfile = ({ userType }: profileProp) => {
       if (formData.image) formPayload.append("image", formData.image);
 
       const response = await axiosClient.post(
-        `/api/provider/saveProfileImage/`,
+        `/api/saveProfileImage/`,
         formPayload,
         {
           headers: {
@@ -170,7 +169,7 @@ const AdminProfile = ({ userType }: profileProp) => {
       );
       if (response.data) {
         console.log(response.data.result);
-        dispatch(updateAdminImage(response.data.result));
+        dispatch(updateUserImage(response.data.result));
         toast.success("Staff updated successfully");
       } else {
         toast.error("Failed to update staff. Please try again.");
@@ -200,7 +199,7 @@ const AdminProfile = ({ userType }: profileProp) => {
     let fieldsToValidate: ("fullname" | "username" | "phone" | "location")[] =
       [];
     const formPayload = new FormData();
-    let apiEndpoint = "/api/provider/providerEditPersonal";
+    let apiEndpoint = "/api/customerEditPersonal";
 
     switch (section) {
       case "personal":
@@ -220,7 +219,7 @@ const AdminProfile = ({ userType }: profileProp) => {
         formPayload.append("location", finalLocation ?? "");
         formPayload.append("latitude", coordinates?.lat.toString() ?? "");
         formPayload.append("longitude", coordinates?.lng.toString() ?? "");
-        apiEndpoint = "/api/provider/providerEditAddress"; // If different endpoint
+        apiEndpoint = "/api/customerEditAddress"; // If different endpoint
         break;
       default:
         return;
@@ -250,7 +249,7 @@ const AdminProfile = ({ userType }: profileProp) => {
           [section]: false,
         }));
         if(response.data){
-           dispatch(updateAdminFullname(response.data?.fullname));
+           dispatch(updateFullname(response.data?.fullname));
         }
       } else {
         toast.error("Failed to update. Please try again.");
@@ -309,9 +308,9 @@ const AdminProfile = ({ userType }: profileProp) => {
     setShowPasswordPopup(false);
   };
   return (
-    <AdminLayout>
+    <CustomerLayoutWithSidebar>
       <div className="bg-[#f2f2f9] rounded-lg p-6">
-        {showPasswordPopup && <ProviderChangePassword close={closePopup} />}
+        {showPasswordPopup && <CustomerChangePassword close={closePopup} />}
         <ToastContainer position="top-center" autoClose={3000} />
 
         {/* Profile Header Section */}
@@ -651,8 +650,8 @@ const AdminProfile = ({ userType }: profileProp) => {
           </div>
         </div>
       </div>
-    </AdminLayout>
+    </CustomerLayoutWithSidebar>
   );
 };
 
-export default AdminProfile;
+export default CustomerProfile;

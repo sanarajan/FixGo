@@ -62,7 +62,10 @@ const StaffsList = ({ userType }: CustomersProps) => {
         totCount={totCount}
         busy={busy}
         refresh={refresh}
+        
         imagePath="providerServices/"
+                userType="provider"
+
         headings={[
           { key: "image", label: "Image", type: "image" },
           { key: "fullname", label: "Name" },
@@ -75,7 +78,7 @@ const StaffsList = ({ userType }: CustomersProps) => {
           //   { key: 'companyName', label: 'Location' },
         ]}
         showSubcategory={false}
-        showActions={["view", "edit", "blockUnblock"]}
+showActions={["view", "edit", "blockUnblock", "verify", "reject"]}
         actionConfig={{
           add: { type: "page", path: "/provider/addStaff" },
           edit: { type: "page", path: "/provider/editStaff" },

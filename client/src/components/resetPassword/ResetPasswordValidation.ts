@@ -1,6 +1,7 @@
 // validation.ts
 
 export interface ForgotData {
+  currentPassword:string;
     password: string;
     confirmPassword: string;
   }
@@ -12,7 +13,11 @@ export interface ForgotData {
   
   export const ResetPasswordValidation = (data: ForgotData): ValidationResult => {
     const errors: ValidationResult["errors"] = {};
-  
+   if (!data.currentPassword.trim()) {
+    errors.currentPassword = "Current password is required";
+  } else if (data.currentPassword.length < 6) {
+    errors.currentPassword = "Current password must be at least 6 characters";
+  }
     if (!data.password.trim()) {
       errors.password = "Password is required";
     } else if (data.password.length < 6) {

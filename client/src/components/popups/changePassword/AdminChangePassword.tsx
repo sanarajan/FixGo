@@ -18,7 +18,7 @@ interface ValidationResult {
   isValid: boolean;
   errors: Partial<Record<keyof passwordData, string>>;
 }
-const ProviderChangePassword = ({ close }: ProviderChangePasswordProps) => {
+const AdminChangePassword = ({ close }: ProviderChangePasswordProps) => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<ValidationResult["errors"]>({});
   const [formData, setFormData] = useState<passwordData>({
@@ -26,7 +26,6 @@ const ProviderChangePassword = ({ close }: ProviderChangePasswordProps) => {
     password: "",
     confirmPassword: "",
   });
-  const userType = getRoleFromPath();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -49,14 +48,14 @@ const ProviderChangePassword = ({ close }: ProviderChangePasswordProps) => {
       setErrors(validationResult.errors);
       return;
     }
-
     try {
-      const userType = getRoleFromPath();
+      const userType = "provider";
       const formPayload = new FormData();
+
       formPayload.append("password", formData.password);
       formPayload.append("currentPassword", formData.currentPassword);
       const response = await axiosClient.post(
-        `/api/provider/providerPasswordReset`,
+        `/api/admin/adminPasswordReset`,
         formPayload,
         {
           headers: { "Content-Type": "application/json", userRole: userType },
@@ -121,7 +120,7 @@ const ProviderChangePassword = ({ close }: ProviderChangePasswordProps) => {
               {errors["currentPassword"]}
             </p>
           )}
-          <label className="text-sm font-semibold px-2 py-3">Password</label>
+          <label className="text-sm font-semibold px-2 py-3">[Password]</label>
           <input
             type="text"
             name="password"
@@ -167,4 +166,4 @@ const ProviderChangePassword = ({ close }: ProviderChangePasswordProps) => {
   );
 };
 
-export default ProviderChangePassword;
+export default AdminChangePassword;

@@ -22,8 +22,7 @@ const menuItems: MenuItem[] = [
   { label: 'HOME', icon: <FaTachometerAlt />, path: '/home' },
   { label: 'PROFILE', icon: <FaUser />, path: '/profile' },
   { label: 'BOOKINGS', icon:  <FaBox />, path: '/bookings' },
-  { label: 'CUSTOMERS', icon: <FaUsers />, path: '/customers' },
-  { label: 'SERVICES', icon: <FaCogs />, path: '/services' },
+
   { label: 'PAYMENTS', icon: <FaMoneyBill />, path: '/payments' },
   { label: 'REPORT', icon: <FaChartBar />, path: '/report' },
 ];
@@ -31,7 +30,7 @@ interface AdminSidebarProps {
   onCollapse: () => void; // 
 }
 const Sidebar: React.FC<AdminSidebarProps> = ({ onCollapse }) => {
-  const user = useSelector((state: RootState) => state.admin.user);
+  const user = useSelector((state: RootState) => state.user.user);
 useEffect(() => {
 
 }, [user?.image]);

@@ -14,13 +14,13 @@ import { UserRole } from "../components/Login/Login";
 import ProtectedRoute from "../components/ProtectedRoute";
 import AllServices from "../customer/pages/allservices/AllServices";
 import SubServices from "../customer/pages/subServices/SubServices"
-import ProviderDetails from "../customer/pages/providerDetails/ProviderDetails";
+import BookingCart from "../customer/pages/providerDetails/BookingCart";
 import Checkout from "../customer/pages/checkout/Checkout";
 import PaymentSuccess from "../customer/pages/payment/PaymentSuccess";
 import PaymentCancel from "../customer/pages/payment/PaymentCancel";
-
 import BookingList from "../customer/pages/bookings/BookingList";
 import BookingDetails from "../customer/pages/bookings/BookingDetails";
+import CustomerProfile from "../customer/pages/profile/CustomerProfile"
 const UserRoutes = () => {
   return (
     <div>
@@ -77,7 +77,7 @@ const UserRoutes = () => {
 
           
           <Route path="/subServices" element={<SubServices />} />
-           <Route path="/providerDetails" element={<ProviderDetails />} />
+           <Route path="/bookingCart" element={<BookingCart />} />
            <Route path="/checkout" element={<Checkout />} />
            {/* stripe callback route */}
           <Route path="/payment-success" element={<PaymentSuccess />} />
@@ -85,6 +85,7 @@ const UserRoutes = () => {
           {/* end stripe callback route */}
          <Route path="/bookings" element={<BookingList />} />
          <Route path="/bookingDetails" element={<BookingDetails />} />
+         <Route path="/profile" element={<CustomerProfile />} />
 
 
 
