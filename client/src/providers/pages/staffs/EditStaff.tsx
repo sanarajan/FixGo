@@ -10,7 +10,11 @@ import { LoadScript } from "@react-google-maps/api";
 import LocationAutocomplete from "../../../components/LocationPicker/LocationAutocomplete";
 import { useLocation } from "react-router-dom";
 import { hasDataChanged } from "./ValidationEditstaff";
+<<<<<<< HEAD
 import StaffServices from "../../../components/popups/staffs/StaffServices";
+=======
+import StaffServices from "../../../components/popups/staffs/StaffServices"
+>>>>>>> recover-providerService
 type Subcategory = {
   _id: string;
   name: string;
@@ -34,7 +38,11 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
     location: "",
     image: null as File | null,
     role: "provider",
+<<<<<<< HEAD
     verified: null,
+=======
+    verified:null
+>>>>>>> recover-providerService
   });
   const location = useLocation();
   const staffItem = location.state;
@@ -52,8 +60,12 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
     []
   );
   const [locationAddress, setLocationAddress] = useState<string | null>(null);
+<<<<<<< HEAD
   const [isStaffVerified, setIsStaffVerified] = useState<boolean>(verified);
   const [showServiceModal, setShowServiceModal] = useState(false);
+=======
+const [showServiceModal, setShowServiceModal] = useState(false);
+>>>>>>> recover-providerService
 
   useEffect(() => {
     if (isStaffVerified) fetchServiceAndSubcategories();
@@ -71,7 +83,11 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
         location: staffItem.address.location || resolvedLocation || "",
         image: staffItem.image || "noimage.png",
         role: staffItem.role || "provider",
+<<<<<<< HEAD
         verified: staffItem.verified,
+=======
+        verified:staffItem.verified
+>>>>>>> recover-providerService
       });
       //if staff verified then add service
       if (isStaffVerified) {
@@ -234,6 +250,7 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
 
   const handleSubmit = async () => {
     const { isValid, errors } = validateForm(formData);
+<<<<<<< HEAD
     let serviceValid;
     if (isStaffVerified) {
       if (formData.verified) {
@@ -298,6 +315,64 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
       } catch (err) {
         console.error("Error updating staff:", err);
         toast.error("An error occurred while updating staff");
+=======
+    let serviceValid
+    if( formData.verified){
+     serviceValid = isServiceSelectionValid(selectedServices);
+    }
+    const finalLocation = locationAddress ?? formData.location;
+    if (!isValid) {
+      setFormErrors(errors);
+      toast.error(errors.email);
+      return;
+    }
+    if (!serviceValid  && formData.verified) {
+      setFormErrors(errors);
+      toast.error("Please select services");
+      return;
+    }
+    if (!finalLocation) {
+      toast.error("Location is required");
+      return;
+    }
+
+    const orgService = staffItem.staffServices || [];
+    const changeService = hasDataChanged(orgService, selectedServices);
+
+    const imageString = formData.image ? formData.image.name : null;
+
+    const formPayload = new FormData();
+    formPayload.append("fullname", formData.fullname);
+    formPayload.append("email", formData.email);
+    formPayload.append("username", "");
+
+    formPayload.append("phone", formData.phone);
+    formPayload.append("type", "staff");
+    formPayload.append("location", finalLocation ?? "");
+    formPayload.append("latitude", coordinates?.lat.toString() ?? "");
+    formPayload.append("longitude", coordinates?.lng.toString() ?? "");
+
+    if (formData.image) formPayload.append("image", formData.image);
+    if (changeService && formData.verified) {
+      formPayload.append("services", JSON.stringify(selectedServices));
+      formPayload.append("oldServices", JSON.stringify(orgService));
+    }
+    try {
+      const response = await axiosClient.patch(
+        `/api/provider/editStaff/${staffItem._id}`,
+        formPayload,
+        {
+          headers: {
+            userRole: userType,
+          },
+        }
+      );
+      if (response.status === 200) {
+        toast.success("Staff updated successfully");
+        navigate("/provider/staffs");
+      } else {
+        toast.error("Failed to update staff. Please try again.");
+>>>>>>> recover-providerService
       }
     }
   };
@@ -355,6 +430,7 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
   } else {
     imageURL = "noimage.png";
   }
+
 
   return (
     <ProviderLayout>
@@ -426,6 +502,7 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
         </div>
 
         {/* === Section 2: Manage Services === */}
+<<<<<<< HEAD
         {isStaffVerified && (
           <div className="p-5 rounded-md border border-gray-300 bg-[#F9F9FC] space-y-4">
             <h2 className="text-2xl font-bold text-[#5A52A4]">
@@ -454,6 +531,36 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
             />
 
             {/* <div>
+=======
+        <div className="p-5 rounded-md border border-gray-300 bg-[#F9F9FC] space-y-4">
+          <h2 className="text-2xl font-bold text-[#5A52A4]">
+            Expertise Services
+          </h2>
+         {formData.verified && (
+  <button
+    onClick={() => setShowServiceModal(true)}
+    className="bg-[#5A52A4] text-white px-4 py-2 rounded-full font-medium shadow hover:bg-[#4a479c]"
+  >
+    + Add Service
+  </button>
+)}
+<StaffServices
+  servicesData={servicesData}
+  selectedServices={selectedServices}
+  expandedServices={expandedServices}
+  show={showServiceModal}
+  onClose={() => setShowServiceModal(false)}
+  onToggleExpand={toggleExpand}
+  onServiceToggle={handleServiceToggle}
+  onSubcategoryToggle={handleSubcategoryToggle}
+  areAllServicesSelected={areAllServicesSelected}
+  handleSelectAll={handleSelectAll}
+/>
+
+
+
+          {/* <div>
+>>>>>>> recover-providerService
             <label className="font-semibold mr-2">Select All Services</label>
             <input
               type="checkbox"
@@ -515,8 +622,12 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
               )}
             </div>
           ))} */}
+<<<<<<< HEAD
           </div>
         )}
+=======
+        </div>
+>>>>>>> recover-providerService
 
         {/* === Section 3: Address === */}
         <div className="p-5 rounded-md border border-gray-300 bg-[#F9F9FC]">
@@ -563,6 +674,9 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
           </button>
         </div>
       </div>
+ 
+
+
     </ProviderLayout>
   );
 };

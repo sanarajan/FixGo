@@ -5,7 +5,11 @@ import adminAxiosClient from "../../../api/adminAxiosClient";
 import { User } from "../../../types/User";
 import AddEditService from "../../../components/popups/services/AddEditService";
 import StatusConfirmPopup from "../../../components/popups/tools/StatusConfirmPopup";
+<<<<<<< HEAD
 import VerifyUser from "../../../components/popups/staffs/VerifyUser"
+=======
+import VerifyUser from "../../../components/popups/staffs/verifyUser"
+>>>>>>> recover-providerService
 import { useLocation } from "react-router-dom";
 
 interface providerProps {
@@ -14,6 +18,10 @@ interface providerProps {
 const ProvidersStaffs = ({ userType }: providerProps) => {
   const location = useLocation();
     const providerId = location.state.providerId;
+<<<<<<< HEAD
+=======
+    console.log(providerId+" id")
+>>>>>>> recover-providerService
   const [staffs, setStaffs] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [busy, setBusy]             = useState(false);
@@ -28,6 +36,10 @@ const ProvidersStaffs = ({ userType }: providerProps) => {
 
   const fetchUsers = async () => {
     try {
+<<<<<<< HEAD
+=======
+      console.log(providerId+" passed id")
+>>>>>>> recover-providerService
       const response = await adminAxiosClient.get(`/api/admin/providersStaffs`,{
   params: {
     page,
