@@ -17,6 +17,8 @@ import { RootState } from "./redux/Store";
 import {
   getCurrentUserRole,getAccessTokenByUserRole
 } from "./utils/RoleHelper";
+import { ToastContainer } from 'react-toastify';
+
  enum UserRole {
   ADMIN = "admin",
   CUSTOMER = "customer",
@@ -77,6 +79,7 @@ const fetchUserData = async () => {
     
     <Router>
       <Routes>
+          <ToastContainer position="top-right" autoClose={3000} />
         {/* <Route path="/admin/*" element={<ProtectedRoute><AdminRoutes /></ProtectedRoute>} /> */}
         <Route path="/admin/*" element={<AdminRoutes />} />
         <Route path="/*" element={<UserRoutes />} />
