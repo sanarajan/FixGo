@@ -408,7 +408,7 @@ export class UserRepositoryImpl implements UserRepository {
 
     const staffs = result[0].data;
     const count = result[0].totalCount[0]?.count || 0;
-    // console.log(JSON.stringify(staffs.services, null, 2));
+    console.log(JSON.stringify(staffs.services, null, 2));
     return {
       data: staffs.map((staff: any) => ({
         ...staff,
