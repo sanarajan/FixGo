@@ -5,7 +5,9 @@ import adminAxiosClient from "../../../api/adminAxiosClient";
 import { User } from "../../../types/User";
 import AddEditService from "../../../components/popups/services/AddEditService";
 import StatusConfirmPopup from "../../../components/popups/tools/StatusConfirmPopup";
-import VerifyUser from "../../../components/popups/staffs/VerifyUser";
+
+import VerifyUser from "../../../components/popups/staffs/VerifyUser"
+
 import { useLocation } from "react-router-dom";
 import RejectReasonPopup from "../../../components/popups/verifyStaff/RejectReasonPopup"
 interface providerProps {
@@ -13,7 +15,8 @@ interface providerProps {
 }
 const ProvidersStaffs = ({ userType }: providerProps) => {
   const location = useLocation();
-  const providerId = location.state.providerId;
+
+    const providerId = location.state.providerId;
   const [staffs, setStaffs] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [busy, setBusy] = useState(false);
@@ -28,17 +31,18 @@ const ProvidersStaffs = ({ userType }: providerProps) => {
 
   const fetchUsers = async () => {
     try {
-      const response = await adminAxiosClient.get(
-        `/api/admin/providersStaffs`,
-        {
-          params: {
-            page,
-            limit: 3,
-            providerId, // your id value
-          },
-        }
-      );
-      setStaffs(response.data.customers);
+
+      const response = await adminAxiosClient.get(`/api/admin/providersStaffs`,{
+  params: {
+    page,
+    limit: 3,
+    providerId, // your id value
+  }},);
+    setStaffs(response.data.customers); 
+
+   setTotalPages(response.data.totalPages); 
+    setTotCount(response.data.totalCount)
+    console.log("filteredUsers", response.data); // ✅ This will now log properly
 
       setTotalPages(response.data.totalPages);
       setTotCount(response.data.totalCount);
