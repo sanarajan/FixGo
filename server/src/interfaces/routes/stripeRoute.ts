@@ -10,6 +10,7 @@ router.post(
   "/webhook/stripe",
   express.raw({ type: "application/json" }),
   async (req, res) => {
+    console.log("🔥 Stripe webhook route hit!");
     await stripeWebhook(req, res);
   }
 );

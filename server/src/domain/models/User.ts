@@ -15,6 +15,11 @@ export interface User {
   type?: 'staff' | 'worker' | 'provider' | null;
   isCompany?:boolean;
   verified?:boolean;
+  rejectionReason?: string | null,
+  lastReviewedByAdmin?: Date | string | null;
+  needsReverification?:boolean,
+  adminSeen?: boolean,
+providerSeen?: boolean, 
   createdAt?: Date;
   updatedAt?: Date;
   createdBy?:string | ObjectId;

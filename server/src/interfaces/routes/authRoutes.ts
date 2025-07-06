@@ -1,5 +1,6 @@
 import express from "express";
 import { customerAuthProtect } from "../../middlewares/customerMiddleware";
+import { upload } from "../../middlewares/upload";
 
 import {
   register,
@@ -21,10 +22,18 @@ import {adminServices,
   providerSubServices,
   categoriesOfServices,
   saveCustomerAddress,
-  getCustomerAddress
+  getCustomerAddress,
+  customerProfile,
+  saveProfileImage,
+  customerEditPersonal,
+  customerEditAddress,
+  customerPasswordReset
 } from "../controllers/CustomerController"
 import { create_checkout_session,stripeWebhook  } from "../controllers/PaymentController";
-import {customerBookings} from "../controllers/OrderController"
+import {customerBookings} from "../controllers/OrderController";
+import {
+  showCoupons
+} from "../controllers/OfferCouponController";
 
 const router = express.Router();
 
@@ -52,6 +61,16 @@ router.post("/create_checkout_session", customerAuthProtect, create_checkout_ses
 
 router.post("/customerLogout",customerAuthProtect,  customerLogout);
 router.get("/bookingList",customerAuthProtect,  customerBookings);
+router.get("/customerProfile", customerAuthProtect, customerProfile);
+router.post("/saveProfileImage", customerAuthProtect,  upload.single("image"),saveProfileImage);
+router.patch("/customerEditPersonal", customerAuthProtect, customerEditPersonal);
+router.patch("/customerEditAddress", customerAuthProtect, customerEditAddress);
+router.post("/customerPasswordReset",customerAuthProtect, customerPasswordReset);
+
+router.get("/showCoupons/:providerId", customerAuthProtect, showCoupons);
+
+
+
 
 
 

@@ -77,173 +77,270 @@ export class CustomerRepositoryImpl implements ICustomerRepository {
   }
 
   async providerServiceInLocation(
-    mainServiceId: string,
-    serviceId: string,
-    coordinates?: { lat: number; lng: number },
-    providerId?: string
-  ): Promise<GroupedProviderService[] | null> {
-    try {
-      if (serviceId) {
-        if (!mongoose.Types.ObjectId.isValid(serviceId)) {
-          throw new Error("Invalid serviceId");
-        }
-      }
-      const pipeline: any[] = [];
+  mainServiceId: string,
+  serviceId: string,
+  coordinates?: { lat: number; lng: number },
+  providerId?: string
+): Promise<GroupedProviderService[] | null> {
+  try {
+    const now = new Date();
 
-      // 1. Geo filter on addresses
-
-      if (coordinates) {
-        pipeline.push({
-          $geoNear: {
-            near: {
-              type: "Point",
-              coordinates: [coordinates.lng, coordinates.lat],
-            },
-            distanceField: "distance",
-            spherical: true,
-            key: "geoLocation",
-            query: {
-              status: "Active",
-              current: true,
-            },
-            distanceMultiplier: 0.001,
-            maxDistance: 20000,
-          },
-        });
-      }
-
-      // Lookup provider services per user
-      pipeline.push({
-        $lookup: {
-          from: "providerservices",
-          localField: "createdBy",
-          foreignField: "createdBy",
-          as: "providerServices",
-        },
-      });
-
-      // Unwind providerServices so each doc is one service per provider
-      pipeline.push({ $unwind: "$providerServices" });
-      pipeline.push({
-        $match: {
-          "providerServices.status": "Active",
-        },
-      });
-      // Filter by serviceId or mainServiceId (only if valid)
-      if (serviceId && mongoose.Types.ObjectId.isValid(serviceId)) {
-        pipeline.push({
-          $match: {
-            "providerServices.subcategoryId": new mongoose.Types.ObjectId(
-              serviceId
-            ),
-          },
-        });
-      } else if (
-        mainServiceId &&
-        mongoose.Types.ObjectId.isValid(mainServiceId)
-      ) {
-        pipeline.push({
-          $match: {
-            "providerServices.serviceId": new mongoose.Types.ObjectId(
-              mainServiceId
-            ),
-          },
-        });
-      }
-
-      // Lookup user details for each doc
-      pipeline.push({
-        $lookup: {
-          from: "users",
-          localField: "createdBy",
-          foreignField: "_id",
-          as: "userDetails",
-        },
-      });
-      pipeline.push({ $unwind: "$userDetails" });
-      pipeline.push({
-        $match: {
-          "userDetails.status": "Active",
-        },
-      });
-      if (providerId && mongoose.Types.ObjectId.isValid(providerId)) {
-        pipeline.push({
-          $match: {
-            "userDetails._id": new mongoose.Types.ObjectId(providerId),
-          },
-        });
-      }
-      // Lookup subcategory for each providerService
-      pipeline.push({
-        $lookup: {
-          from: "subcategories",
-          localField: "providerServices.subcategoryId",
-          foreignField: "_id",
-          as: "subcategoryDetails",
-        },
-      });
-      pipeline.push({ $unwind: "$subcategoryDetails" });
-
-      // Lookup service for each providerService
-      pipeline.push({
-        $lookup: {
-          from: "services",
-          localField: "providerServices.serviceId",
-          foreignField: "_id",
-          as: "serviceDetails",
-        },
-      });
-      pipeline.push({ $unwind: "$serviceDetails" });
-
-      // Group by provider + subcategory to avoid duplicates of the same subcategory per provider
-      pipeline.push({
-        $group: {
-          _id: {
-            providerId: "$userDetails._id",
-            subcategoryId: "$subcategoryDetails._id",
-            providerServiceId: "$providerServices._id",
-            serviceId: "$serviceDetails._id",
-          },
-          fullname: { $first: "$userDetails.fullname" },
-          phone: { $first: "$userDetails.phone" },
-          image: { $first: "$userDetails.image" },
-          providerservImg: { $first: "$providerServices.image" },
-          description: { $first: "$providerServices.description" },
-          features: { $first: "$providerServices.features" },
-          serviceName: { $first: "$serviceDetails.serviceName" },
-          subcategoryName: { $first: "$subcategoryDetails.subcategory" },
-          distance: { $first: "$distance" },
-        },
-      });
-
-      // Project final shape
-      pipeline.push({
-        $project: {
-          _id: 1,
-          providerId: "$_id.providerId",
-          fullname: 1,
-          providerservImg: 1,
-          phone: 1,
-          image: 1,
-          description: 1,
-          features: 1,
-          serviceName: 1,
-          subcategoryName: 1,
-          distance: 1,
-        },
-      });
-
-      const results = await AddressModel.aggregate(pipeline);
-      console.log(JSON.stringify(results, null, 2) + " result");
-      return results;
-    } catch (err: any) {
-      console.error(
-        "Error getting provider services in location:",
-        err.message
-      );
-      throw err;
+    if (serviceId && !mongoose.Types.ObjectId.isValid(serviceId)) {
+      throw new Error("Invalid serviceId");
     }
+
+    const pipeline: any[] = [];
+
+    if (coordinates) {
+      pipeline.push({
+        $geoNear: {
+          near: {
+            type: "Point",
+            coordinates: [coordinates.lng, coordinates.lat],
+          },
+          distanceField: "distance",
+          spherical: true,
+          key: "geoLocation",
+          query: {
+            status: "Active",
+            current: true,
+          },
+          distanceMultiplier: 0.001,
+          maxDistance: 20000,
+        },
+      });
+    }
+
+    pipeline.push({
+      $lookup: {
+        from: "providerservices",
+        localField: "createdBy",
+        foreignField: "createdBy",
+        as: "providerServices",
+      },
+    });
+
+    pipeline.push({ $unwind: "$providerServices" });
+    pipeline.push({
+      $match: {
+        "providerServices.status": "Active",
+      },
+    });
+
+    if (serviceId && mongoose.Types.ObjectId.isValid(serviceId)) {
+      pipeline.push({
+        $match: {
+          "providerServices.subcategoryId": new mongoose.Types.ObjectId(serviceId),
+        },
+      });
+    } else if (mainServiceId && mongoose.Types.ObjectId.isValid(mainServiceId)) {
+      pipeline.push({
+        $match: {
+          "providerServices.serviceId": new mongoose.Types.ObjectId(mainServiceId),
+        },
+      });
+    }
+
+    pipeline.push({
+      $lookup: {
+        from: "users",
+        localField: "createdBy",
+        foreignField: "_id",
+        as: "userDetails",
+      },
+    });
+    pipeline.push({ $unwind: "$userDetails" });
+    pipeline.push({
+      $match: {
+        "userDetails.status": "Active",
+      },
+    });
+    if (providerId && mongoose.Types.ObjectId.isValid(providerId)) {
+      pipeline.push({
+        $match: {
+          "userDetails._id": new mongoose.Types.ObjectId(providerId),
+        },
+      });
+    }
+
+    pipeline.push({
+      $lookup: {
+        from: "subcategories",
+        localField: "providerServices.subcategoryId",
+        foreignField: "_id",
+        as: "subcategoryDetails",
+      },
+    });
+    pipeline.push({ $unwind: "$subcategoryDetails" });
+
+    pipeline.push({
+      $lookup: {
+        from: "services",
+        localField: "providerServices.serviceId",
+        foreignField: "_id",
+        as: "serviceDetails",
+      },
+    });
+    pipeline.push({ $unwind: "$serviceDetails" });
+
+    pipeline.push({
+      $lookup: {
+        from: "offers",
+        let: {
+          providerServiceId: "$providerServices._id",
+          subcategoryId: "$providerServices.subcategoryId",
+          serviceId: "$providerServices.serviceId",
+        },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ["$status", "Active"] },
+                  { $lte: ["$startDate", now] },
+                  { $gte: ["$endDate", now] },
+                  {
+                    $or: [
+                      {
+                        $and: [
+                          { $eq: ["$offerFor", "subcategory"] },
+                          { $eq: ["$subcategoryId", "$$subcategoryId"] },
+                        ],
+                      },
+                      {
+                        $and: [
+                          { $eq: ["$offerFor", "service"] },
+                          { $eq: ["$serviceId", "$$serviceId"] },
+                        ],
+                      },
+                    ],
+                  },
+                  { $eq: ["$providerServiceId", "$$providerServiceId"] },
+                ],
+              },
+            },
+          },
+          {
+            $addFields: {
+              effectiveValue: {
+                $cond: [
+                  { $eq: ["$offerType", "percentage"] },
+                  { $multiply: ["$offerValue", 1] },
+                  { $multiply: ["$offerValue", 1] },
+                ],
+              },
+            },
+          },
+          { $sort: { effectiveValue: -1 } },
+          { $limit: 1 },
+        ],
+        as: "bestOffer",
+      },
+    });
+
+    pipeline.push({
+      $unwind: {
+        path: "$bestOffer",
+        preserveNullAndEmptyArrays: true,
+      },
+    });
+
+    pipeline.push({
+      $addFields: {
+        discountedAmount: {
+          $cond: {
+            if: {
+              $and: [
+                "$bestOffer",
+                "$providerServices.totalAmount",
+                { $gt: ["$providerServices.totalAmount", 0] },
+              ],
+            },
+            then: {
+              $cond: {
+                if: { $eq: ["$bestOffer.offerType", "percentage"] },
+                then: {
+                  $subtract: [
+                    "$providerServices.totalAmount",
+                    {
+                      $multiply: [
+                        "$providerServices.totalAmount",
+                        { $divide: ["$bestOffer.offerValue", 100] },
+                      ],
+                    },
+                  ],
+                },
+                else: {
+                  $subtract: [
+                    "$providerServices.totalAmount",
+                    "$bestOffer.offerValue",
+                  ],
+                },
+              },
+            },
+            else: "$providerServices.totalAmount",
+          },
+        },
+      },
+    });
+
+    pipeline.push({
+      $group: {
+        _id: {
+          providerId: "$userDetails._id",
+          subcategoryId: "$subcategoryDetails._id",
+          providerServiceId: "$providerServices._id",
+          serviceId: "$serviceDetails._id",
+        },
+        fullname: { $first: "$userDetails.fullname" },
+        phone: { $first: "$userDetails.phone" },
+        image: { $first: "$userDetails.image" },
+        providerservImg: { $first: "$providerServices.image" },
+        description: { $first: "$providerServices.description" },
+        amountPerHour: { $first: "$providerServices.amountPerHour" },
+        averageTimeInHours: { $first: "$providerServices.averageTimeInHours" },
+        totalAmount: { $first: "$providerServices.totalAmount" },
+        discountedAmount: { $first: "$discountedAmount" },
+        features: { $first: "$providerServices.features" },
+        serviceName: { $first: "$serviceDetails.serviceName" },
+        subcategoryName: { $first: "$subcategoryDetails.subcategory" },
+        distance: { $first: "$distance" },
+        bestOffer: { $first: "$bestOffer" },
+      },
+    });
+
+    pipeline.push({
+      $project: {
+        _id: 1,
+        providerId: "$_id.providerId",
+        fullname: 1,
+        providerservImg: 1,
+        phone: 1,
+        image: 1,
+        description: 1,
+        features: 1,
+        serviceName: 1,
+        subcategoryName: 1,
+        distance: 1,
+        totalAmount: 1,
+        discountedAmount: 1,
+        offerName: "$bestOffer.offerName",
+        offerType: "$bestOffer.offerType",
+        offerValue: "$bestOffer.offerValue",
+        offerFor: "$bestOffer.offerFor",   
+
+    offerDescription: "$bestOffer.description",
+      },
+    });
+
+    const results = await AddressModel.aggregate(pipeline);
+    console.log(JSON.stringify(results,null,2)+" datas")
+    return results;
+  } catch (err: any) {
+    console.error("Error getting provider services in location:", err.message);
+    throw err;
   }
+}
 
   //  async providerServiceInLocation(
   //     serviceId: string,coordinates?:{

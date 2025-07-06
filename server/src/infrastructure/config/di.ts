@@ -26,6 +26,11 @@ import {IOrderRepository} from "../../domain/repositories/customer/IOrderReposit
 
 import {IOfferCouponRepository} from "../../domain/repositories/IOfferCouponRepository";
 import {IOfferCouponRepositoryImpl} from "../../infrastructure/database/repositories/IOfferCouponRepositoryImpl"
+import { NotificationService } from "../../application/services/NotificationService";
+import { SocketServiceImpl } from "../../infrastructure/services/sockets/SocketServiceImpl";
+import { ISocketService } from "../../domain/services/sockets/ISocketService";
+
+container.registerSingleton<ISocketService>("SocketService", SocketServiceImpl);
 // Register interfaces to concrete implementations
 container.register<UserRepository>("UserRepository", {
     useClass: UserRepositoryImpl,
@@ -69,4 +74,7 @@ container.register<IOrderRepository>('IOrderRepository', {
 });
 container.register<IOfferCouponRepository>('IOfferCouponRepository', {
   useClass: IOfferCouponRepositoryImpl,
+});
+container.register<NotificationService>("NotificationService", {
+  useClass: NotificationService,
 });

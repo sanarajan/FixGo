@@ -13,6 +13,9 @@ import {ProvidersStaffsUsecase} from "../../application/use-cases/admin/staffs/P
 import { OtpService } from "../../application/services/OtpService";
 import { AuthService } from "../../application/services/AuthService";
 import { UserRepository } from "../../domain/repositories/UserRepository";
+import {RejectStaffUseCase} from "../../application/use-cases/admin/staffs/RejectStaffUseCase";
+import { ProviderResetPasswordUsecase } from "../../application/use-cases/provider/providerServices/ProviderResetPasswordUsecase";
+
 interface CustomError extends Error {
   status?: number;
 }
@@ -98,7 +101,6 @@ export const providersStaffs = async (
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
      const providerId = req.query.providerId as string;
-     console.log(providerId+" prov id in controller")
     const staffs = container.resolve(ProvidersStaffsUsecase);
     const customers = await staffs.execute(page,limit,providerId);
     const totalCount = await UserModel.countDocuments({ type: "staff", providerId:providerId });
@@ -187,15 +189,17 @@ export const adminLogout = async (
 
 export const validateStaffVerifyOtp = async (req: Request, res: Response): Promise<void> => {
   try {
-    let { otpEmail, userOtp, userType } = req.body;
+    let { otpEmail, userOtp } = req.body;
     const email = otpEmail;
-    const otpService = container.resolve<OtpService>("OtpService");
 
+    const otpService = container.resolve<OtpService>("OtpService");
     const isValid = await otpService.validateOtp(email, userOtp);
 
     if (!isValid) {
-     res.status(400).json({ message: "Invalid or expired OTP" });
+      res.status(400).json({ message: "Invalid or expired OTP" });
+      return;
     }
+
     const userRepository = container.resolve<UserRepository>("UserRepository");
     let user = await userRepository.findByEmail(email);
 
@@ -203,25 +207,73 @@ export const validateStaffVerifyOtp = async (req: Request, res: Response): Promi
       res.status(404).json({ error: "User not found" });
       return;
     }
-      const verify =true
-      const verified =await UserModel.findByIdAndUpdate(user._id, { verified: verify });
-    
-    // const formattedUser = {
-    //   ...user,
-    //   _id: user._id?.toString(),
-    //   providerId: user.providerId?.toString() ?? undefined,
-    // };   
+
+    await UserModel.findByIdAndUpdate(user._id, {
+      verified: true,
+      rejectionReason: null,
+      needsReverification: false,
+      lastReviewedByAdmin: new Date(),
+      adminSeen: true,
+      providerSeen: false,
+    });
 
     res.status(200).json({
-      message: "OTP validated successfully",
-      // user: formattedUser,
-      isValid,
+      message: "OTP validated successfully and user verified",
+      isValid: true,
     });
   } catch (err) {
-    if (err instanceof Error) {
-      res.status(400).json({ error: err.message || "OTP validation failed" });
-    } else {
-      res.status(400).json({ error: "An unknown error occurred" });
+    res.status(400).json({
+      error: err instanceof Error ? err.message : "OTP validation failed",
+    });
+  }
+};
+
+
+
+export const rejectStaff = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { staffId, reason } = req.body;
+    const rejectStaffUseCase = container.resolve(RejectStaffUseCase);
+    const result = await rejectStaffUseCase.execute(staffId, reason);
+
+    res.status(200).json({ message: "Staff rejected successfully", result });
+  } catch (err) {
+    const error = err as Error;
+       console.log("❌ Controller error", error.message); // ✅ log error too
+    res.status(400).json({ error: error.message || "Rejection failed" });
+  }
+};
+
+export const adminPasswordReset = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { currentPassword,password } = req.body;
+    const admin = (req as any).user;
+
+    const id = admin.id;
+
+    if (!password || password.length < 6) {
+      res
+        .status(400)
+        .json({ message: "Password must be at least 6 characters long" });
+      return;
     }
+
+    const resetPasswordUseCase = container.resolve(
+      ProviderResetPasswordUsecase
+    );
+    const success = await resetPasswordUseCase.execute(currentPassword,password, id);
+
+    if (success) {
+      res.status(200).json({ message: "Password updated successfully" });
+    } else {
+      res.status(500).json({ message: "Could not update password" });
+    }
+  } catch (err) {
+    const error = err as Error;
+    console.error("Reset Password Error:", error.message);
+    res.status(500).json({ message: error.message || "Something went wrong" });
   }
 };

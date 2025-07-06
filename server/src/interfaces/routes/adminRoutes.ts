@@ -13,7 +13,9 @@ import {
   blockUnblockProvider,
   adminLogout,
   providersStaffs,
-  validateStaffVerifyOtp
+  validateStaffVerifyOtp,
+  rejectStaff,
+  adminPasswordReset
 } from "../controllers/AdminController";
 import {
   servicesList,
@@ -32,6 +34,8 @@ import {adminAuthProtect} from "../../middlewares/adminMiddleware"
 router.get("/customers", protectedRoute, getAllCustomers);
 router.get("/providers", protectedRoute, getAllProviders);
 router.patch("/blockUnblockProvider/:id", protectedRoute, blockUnblockProvider);
+router.post("/adminPasswordReset", adminAuthProtect, adminPasswordReset);
+
 
 router.get("/customerView/:id", protectedRoute, customerView);
 router.get("/providerView/:id", protectedRoute, providerView);
@@ -51,6 +55,7 @@ router.get("/providersStaffs", adminAuthProtect, providersStaffs);
 router.post("/verifyStaff",adminAuthProtect, emailVerification);
 
 router.post("/validateStaffVerifyOtp",adminAuthProtect, validateStaffVerifyOtp);
+router.post("/rejectStaff",adminAuthProtect, rejectStaff);
 
 
 

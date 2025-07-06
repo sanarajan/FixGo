@@ -2,6 +2,8 @@ import { IOfferCouponRepository } from "../../../domain/repositories/IOfferCoupo
 import { OfferModel } from "../models/OfferModel";
 import { IOffer } from "../../../domain/models/IOffer";
 import { ProviderServicesModel } from "../models/ProviderServicesModel";
+import { ICoupon } from "../../../domain/models/ICoupon";
+import { CouponModel } from "../../database/models/CouponModel";
 
 export class IOfferCouponRepositoryImpl implements IOfferCouponRepository {
   async createOffer(data: Partial<IOffer>): Promise<IOffer> {
@@ -87,6 +89,48 @@ export class IOfferCouponRepositoryImpl implements IOfferCouponRepository {
   if (!updated) throw new Error("Offer not found for update");
   return updated;
 }
-    
+  
+
+ async createCoupon(data: Partial<ICoupon>): Promise<ICoupon> {
+    const doc = new CouponModel(data);
+    return await doc.save();
+  }
+
+  async findByNameAndProvider(couponName: string, providerId: string): Promise<ICoupon | null> {
+    return await CouponModel.findOne({
+      couponName,
+      providerId,
+    }).lean();
+  }
+  async updateCoupon(id: string, data: Partial<ICoupon>): Promise<ICoupon|null> {
+  return await CouponModel.findByIdAndUpdate(id, data, { new: true }).exec();
+}
+
+async providerCouponList(providerId:string,page: number = 1, limit: number = 3): Promise<ICoupon[]>{
+    const coupons = await CouponModel.find({ createdBy: providerId })
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .lean();
+
+  return coupons;
+  }
+  async showCoupons(providerId: string): Promise<{ total: number; coupons: ICoupon[] }> {
+  const today = new Date();
+
+  const filter = {
+    createdBy: providerId,
+    status: "Active",
+    startDate: { $lte: today },
+    endDate: { $gte: today }
+  };
+
+  const [total, coupons] = await Promise.all([
+    CouponModel.countDocuments(filter),
+    CouponModel.find(filter).lean()
+  ]);
+
+  return { total, coupons };
+}
+
 }
 
