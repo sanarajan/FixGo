@@ -12,5 +12,6 @@ export interface User {
     isActive: boolean;
     createdAt?: Date;
     updatedAt?: Date;
+    rejectionReason?:string;
   }
   

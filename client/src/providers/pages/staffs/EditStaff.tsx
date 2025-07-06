@@ -10,7 +10,7 @@ import { LoadScript } from "@react-google-maps/api";
 import LocationAutocomplete from "../../../components/LocationPicker/LocationAutocomplete";
 import { useLocation } from "react-router-dom";
 import { hasDataChanged } from "./ValidationEditstaff";
-import StaffServices from "../../../components/popups/staffs/StaffServices"
+import StaffServices from "../../../components/popups/staffs/StaffServices";
 type Subcategory = {
   _id: string;
   name: string;
@@ -236,67 +236,75 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
 
   const handleSubmit = async () => {  
     const { isValid, errors } = validateForm(formData);
-    let serviceValid
-    if( formData.verified){
-     serviceValid = isServiceSelectionValid(selectedServices);
-    }
-    const finalLocation = locationAddress ?? formData.location;
-    if (!isValid) {
-      setFormErrors(errors);
-      toast.error(errors.email);
-      return;
-    }
-    if (!serviceValid  && formData.verified) {
-      setFormErrors(errors);
-      toast.error("Please select services");
-      return;
-    }
-    if (!finalLocation) {
-      toast.error("Location is required");
-      return;
-    }
+    let serviceValid;
+    if (isStaffVerified) {     
 
-    const orgService = staffItem.staffServices || [];
-    const changeService = hasDataChanged(orgService, selectedServices);
-
-    const imageString = formData.image ? formData.image.name : null;
-
-    const formPayload = new FormData();
-    formPayload.append("fullname", formData.fullname);
-    formPayload.append("email", formData.email);
-    formPayload.append("username", "");
-
-    formPayload.append("phone", formData.phone);
-    formPayload.append("type", "staff");
-    formPayload.append("location", finalLocation ?? "");
-    formPayload.append("latitude", coordinates?.lat.toString() ?? "");
-    formPayload.append("longitude", coordinates?.lng.toString() ?? "");
-
-    if (formData.image) formPayload.append("image", formData.image);
-    if (changeService && formData.verified) {
-      formPayload.append("services", JSON.stringify(selectedServices));
-      formPayload.append("oldServices", JSON.stringify(orgService));
-    }
-    try {
-      const response = await axiosClient.patch(
-        `/api/provider/editStaff/${staffItem._id}`,
-        formPayload,
-        {
-          headers: {
-            userRole: userType,
-          },
-        }
-      );
-      if (response.status === 200) {
-        toast.success("Staff updated successfully");
-        navigate("/provider/staffs");
-      } else {
-        toast.error("Failed to update staff. Please try again.");
+      if (formData.verified) {
+        serviceValid = isServiceSelectionValid(selectedServices);
+      }   
+       if (!serviceValid && formData.verified) {
+        setFormErrors(errors);
+        toast.error("Please select services");
+        return;
       }
-    } catch (error) {
-      console.error("Error updating staff:", error);
-      toast.error("An error occurred while updating staff");
     }
+      const finalLocation = locationAddress ?? formData.location;
+      if (!isValid) {
+        setFormErrors(errors);
+        toast.error(errors.email);
+        return;
+      }
+      // if (!serviceValid &&isStaffVerified) {
+     
+      if (!finalLocation) {
+        toast.error("Location is required");
+        return;
+      }
+      const orgService = staffItem.staffServices || [];
+      const changeService = hasDataChanged(orgService, selectedServices);
+
+      const imageString = formData.image ? formData.image.name : null;
+
+      const formPayload = new FormData();
+      formPayload.append("fullname", formData.fullname);
+      formPayload.append("email", formData.email);
+      formPayload.append("username", "");
+formPayload.append("rejected", rejected.toString());
+
+      formPayload.append("phone", formData.phone);
+      formPayload.append("type", "staff");
+      formPayload.append("location", finalLocation ?? "");
+      formPayload.append("latitude", coordinates?.lat.toString() ?? "");
+      formPayload.append("longitude", coordinates?.lng.toString() ?? "");
+
+
+      if (formData.image) formPayload.append("image", formData.image);
+      // if (changeService &&isStaffVerified) {
+      //   console.log(JSON.stringify(selectedServices)+"  stringify")
+      if (changeService && formData.verified) {
+        formPayload.append("services", JSON.stringify(selectedServices));
+        formPayload.append("oldServices", JSON.stringify(orgService));
+      }
+      try {
+        const response = await axiosClient.patch(
+          `/api/provider/editStaff/${staffItem._id}`,
+          formPayload,
+          {
+            headers: {
+              userRole: userType,
+            },
+          }
+        );
+        if (response.status === 200) {
+          toast.success("Staff updated successfully");
+          navigate("/provider/staffs");
+        } else {
+          toast.error("Failed to update staff. Please try again.");
+        }
+      } catch (err) {
+        console.error("Error updating staff:", err);
+        toast.error("An error occurred while updating staff");
+      }
    
   };
 

@@ -50,6 +50,7 @@ const StaffsList = ({ userType }: CustomersProps) => {
       user.username.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }
+  console.log(JSON.stringify(users,null,2),"users in staffs list");
   return (
     <ProviderLayout>
       <TableList
@@ -62,10 +63,8 @@ const StaffsList = ({ userType }: CustomersProps) => {
         totCount={totCount}
         busy={busy}
         refresh={refresh}
-        
+        userType="provider"
         imagePath="providerServices/"
-                userType="provider"
-
         headings={[
           { key: "image", label: "Image", type: "image" },
           { key: "fullname", label: "Name" },
@@ -73,12 +72,12 @@ const StaffsList = ({ userType }: CustomersProps) => {
           { key: "email", label: "Email" },
           { key: "phone", label: "Mobile" },
           { key: "status", label: "Status", type: "status" },
-                    { key: "isStaffExist", label: "Staffs", type: "button" },       
+                   { key: "verified", label: "Verify", type: "verified" },      
 
           //   { key: 'companyName', label: 'Location' },
         ]}
         showSubcategory={false}
-showActions={["view", "edit", "blockUnblock", "verify", "reject"]}
+        showActions={["view", "edit", "blockUnblock"]}
         actionConfig={{
           add: { type: "page", path: "/provider/addStaff" },
           edit: { type: "page", path: "/provider/editStaff" },
