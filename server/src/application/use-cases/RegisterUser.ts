@@ -3,12 +3,15 @@ import { inject, injectable } from "tsyringe";
 import { User } from "../../domain/models/User";
 import { UserRepository } from "../../domain/repositories/UserRepository";
 import { HashService } from "../services/HashService";
+import { WalletRepository } from "../../domain/repositories/WalletRepository";
 
 @injectable()
 export class RegisterUser {
   constructor(
     @inject("UserRepository") private userRepository: UserRepository,
-    @inject("HashService") private hashService: HashService
+    @inject("HashService") private hashService: HashService,
+    @inject("WalletRepository") private walletRepo: WalletRepository
+
   ) {}
 
   public async execute(user: User): Promise<User> {
@@ -39,6 +42,7 @@ export class RegisterUser {
 
     //  Create user
     const createdUser = await this.userRepository.create(user);
+    await this.walletRepo.createWallet(createdUser._id as string);
     return createdUser;
   }
 }

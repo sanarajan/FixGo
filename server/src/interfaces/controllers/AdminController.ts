@@ -232,9 +232,11 @@ export const validateStaffVerifyOtp = async (req: Request, res: Response): Promi
 
 export const rejectStaff = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { staffId, reason } = req.body;
+     const admin = (req as any).user;
+    const adminId =admin.id
+    const { staffId, reason,data } = req.body;
     const rejectStaffUseCase = container.resolve(RejectStaffUseCase);
-    const result = await rejectStaffUseCase.execute(staffId, reason);
+    const result = await rejectStaffUseCase.execute(staffId, reason,data,adminId);
 
     res.status(200).json({ message: "Staff rejected successfully", result });
   } catch (err) {

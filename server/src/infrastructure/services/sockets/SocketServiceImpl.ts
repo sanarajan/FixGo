@@ -1,17 +1,32 @@
-import { ISocketService } from "../../../domain/services/sockets/ISocketService";
+import { Server, Socket } from "socket.io";
 import { injectable } from "tsyringe";
-import { Server } from "socket.io";
+import { ISocketService } from "../../../domain/services/sockets/ISocketService";
 
 @injectable()
 export class SocketServiceImpl implements ISocketService {
   private io: Server | null = null;
 
-  public setSocketServer(io: Server) {
-    this.io = io;
+  setSocketServer(server: Server): void {
+    this.io = server;
+
+    this.io.on("connection", (socket: Socket) => {
+      console.log("🔌 New socket connected:", socket.id);
+
+      socket.on("registerUser", (userId: string) => {
+        console.log("✅ User joined room:", userId);
+        socket.join(userId); // Join room by userId
+      });
+
+      socket.on("disconnect", () => {
+        console.log("❌ Socket disconnected:", socket.id);
+      });
+    });
   }
 
-  emitToUser(userId: string, event: string, data: any): void {
-    if (!this.io) return;
-    this.io.to(userId).emit(event, data);  // emit to specific user room
+  emitToUser(userId: string, event: string, payload: any): string {
+    if (!this.io) return `❌ Socket server not initialized`;
+
+    this.io.to(userId).emit(event, payload);
+    return `✅ Emitted '${event}' to userId (room): ${userId}`;
   }
 }

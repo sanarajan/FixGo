@@ -25,7 +25,6 @@ export class EmailServiceImpl implements EmailService {
     <p>This link will expire in 1 hour.</p>`;
 
     const send = await this.sendGenericEmail(email, subject, text);
-    console.log(send+" send")
     return true
   }
 

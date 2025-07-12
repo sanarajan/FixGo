@@ -26,7 +26,7 @@ import {
   getSubcategoriesByServiceId,
 } from "../controllers/ProviderController";
 import { bookingList } from "../controllers/OrderController";
-import { saveStaffServices } from "../controllers/StaffController";
+import { saveStaffServices,fetchRejectedStaff } from "../controllers/StaffController";
 import {
   addOffer,
   offerList,
@@ -36,6 +36,7 @@ import {
   couponList,
   editCoupon
 } from "../controllers/OfferCouponController";
+import { notifications } from "../controllers/NotificationController"
 import { protectedRoute } from "../../middlewares/authMiddleware";
 router.get("/customersList", protectedRoute, getAllCustomers);
 router.get("/customerView/:id", protectedRoute, customerView);
@@ -108,6 +109,9 @@ router.post("/editOffer", protectedRoute, editOffer);
 router.post("/addCoupon", protectedRoute,upload.single("couponImage"), addCoupon);
 router.get("/couponList", protectedRoute, couponList);
 router.patch("/editCoupon/:id", protectedRoute,upload.single("couponImage"), editCoupon);
+router.get("/notifications", protectedRoute, notifications);
+router.get("/fetchRejectedStaff/:staffId", protectedRoute, fetchRejectedStaff);
+
 
 
 

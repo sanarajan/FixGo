@@ -77,5 +77,4 @@ router.get("/showCoupons/:providerId", customerAuthProtect, showCoupons);
 
 
 
-
 export default router;

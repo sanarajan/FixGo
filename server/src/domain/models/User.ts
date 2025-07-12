@@ -25,5 +25,6 @@ providerSeen?: boolean,
   createdBy?:string | ObjectId;
     updatedBy?:string | ObjectId;
 
-  image?:string|null
+  image?:string|null;
+  rejected?:boolean;
 }

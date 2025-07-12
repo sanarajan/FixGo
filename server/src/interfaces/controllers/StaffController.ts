@@ -2,7 +2,14 @@ import { Request, Response } from "express";
 import { ProviderServicesModel } from "../../infrastructure/database/models/ProviderServicesModel";
 import { StaffServicesModel } from "../../infrastructure/database/models/StaffServicesModel";
 import { OrdersModel } from "../../infrastructure/database/models/OrdersModel";
+import { UserModel } from "../../infrastructure/database/models/UserModel";
+import mongoose,{ Types } from "mongoose";
+import  {WalletModel}  from "../../infrastructure/database/models/WalletModel";
+import { Wallet } from "../../domain/models/Wallet";
 
+interface CustomError extends Error {
+  status?: number;
+}
 export const saveStaffServices = async (req: Request, res: Response) => {
   try {
     const { staffId, services } = req.body;
@@ -125,3 +132,59 @@ for (const staffService of existingStaffServices) {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+export const fetchRejectedStaff = async (req: Request, res: Response): Promise<void> => {
+  try {
+
+    const staffId = req.params.staffId;
+
+    const staffWithAddress = await UserModel.aggregate([
+      {
+        $match: {
+          _id: new mongoose.Types.ObjectId(staffId),
+        },
+      },
+      {
+        $lookup: {
+          from: "addresses",
+          localField: "_id",
+          foreignField: "userId",
+          as: "addresses",
+        },
+      },
+      {
+        $addFields: {
+          address: {
+            $first: {
+              $filter: {
+                input: "$addresses",
+                as: "addr",
+                cond: { $eq: ["$$addr.current", true] },
+              },
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          addresses: 0,
+        },
+      },
+    ]);
+
+    const result = staffWithAddress[0];
+
+    if (!result) {
+      res.status(404).json({ error: "Staff not found" });
+      return;
+    }
+
+    res.status(200).json(result);
+  } catch (err) {
+    const e = err as CustomError;
+    console.error("Error:", e.message);
+    res.status(e.status || 500).json({ error: e.message });
+  }
+};
+
+ 
