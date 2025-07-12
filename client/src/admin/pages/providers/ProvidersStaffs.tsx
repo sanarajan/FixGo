@@ -17,6 +17,7 @@ const ProvidersStaffs = ({ userType }: providerProps) => {
   const location = useLocation();
 
     const providerId = location.state.providerId;
+    const providerEmail = location.state.email;
   const [staffs, setStaffs] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [busy, setBusy] = useState(false);

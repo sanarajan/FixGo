@@ -21,7 +21,6 @@ import { Types } from "mongoose";
 
 import { ProviderEditUsecase } from "../../application/use-cases/provider/providerServices/ProviderEditUsecase";
 import { ProviderAddressEditUsecase } from "../../application/use-cases/provider/providerServices/ProviderAddressEditUsecase";
-import bcrypt from "bcrypt";
 import { ProviderResetPasswordUsecase } from "../../application/use-cases/provider/providerServices/ProviderResetPasswordUsecase";
 import { ServiceListForStaffUsecase } from "../../application/use-cases/provider/providerServices/ServiceListForStaffUsecase";
 import {GetProviderServiceAndSubcategoryUsecase} from "../../application/use-cases/provider/offers/GetProviderServiceAndSubcategoryUsecase"
@@ -285,9 +284,8 @@ export const editStaff = async (req: Request, res: Response): Promise<void> => {
     const providerid = admin.id;
     const id = req.params.id;
     const rejectedFlag = req.body.rejected === "true";
-
+console.log("rejectedFlag", rejectedFlag);
     const data = { ...req.body };
-console.log(JSON.stringify(data,null,2)+" edit data")
     if (req.file) {
       data.image = req.file.filename;
     }

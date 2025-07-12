@@ -33,7 +33,6 @@ let EmailServiceImpl = class EmailServiceImpl {
     <p><a href="${link}">Click here to reset your password</a></p>
     <p>This link will expire in 1 hour.</p>`;
         const send = await this.sendGenericEmail(email, subject, text);
-        console.log(send + " send");
         return true;
     }
     async sendGenericEmail(to, subject, text) {

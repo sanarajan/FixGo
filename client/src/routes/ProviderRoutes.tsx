@@ -24,7 +24,8 @@ import EditOffer from "../providers/pages/offers/EditOffer";
 import Coupons from "../providers/pages/coupons/Coupons";
 import AddCoupon from "../providers/pages/coupons/AddCoupon";
 import EditCoupon from "../providers/pages/coupons/EditCoupon";
-
+import RejectedStaff from "../providers/pages/staffs/RejectedStaff";
+import ProviderWallet from "../providers/pages/wallet/ProviderWallet";
 
 const ProviderRoutes = () => {
   return (
@@ -133,6 +134,14 @@ const ProviderRoutes = () => {
          <Route
           path="/editCoupon"
           element={<EditCoupon />}
+        />
+         <Route
+          path="/rejectedStaff"
+          element={<RejectedStaff userType="provider"/>}
+        />
+          <Route
+          path="/wallet"
+          element={<ProviderWallet />}
         />
         
       </Routes>

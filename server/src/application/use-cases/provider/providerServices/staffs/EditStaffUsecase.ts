@@ -8,12 +8,15 @@ import { SubcategoryModel } from "../../../../../infrastructure/database/models/
 import { ProviderServicesModel } from "../../../../../infrastructure/database/models/ProviderServicesModel";
 import { Iaddresses } from "../../../../../domain/models/Iaddresses";
 import { compareServices } from "../../../../../shared/helpers/PairServiceHelper";
+import { INotificationRepository } from "../../../../../domain/repositories/INotificationRepository";
 @injectable()
 export class EditStaffUsecase {
   constructor(
     @inject("UserRepository") private userRepository: UserRepository,
     @inject("IproviderServicesRepository")
-    private staffServiceRepo: IproviderServicesRepository
+    private staffServiceRepo: IproviderServicesRepository,
+    @inject("INotificationRepository")
+    private nofiRepo: INotificationRepository
   ) {}
 
   public async execute(
@@ -65,6 +68,13 @@ export class EditStaffUsecase {
       user.rejectionReason = null;
       user.needsReverification = true;
       user.adminSeen = false;
+      console.log(" this is rejected staff going to update")
+      
+      
+      const updateNotificationStatus = await this.nofiRepo.readNotification(
+        id,
+        "staff_rejected"
+      );
     }
 
     if (!user.fullname || user.fullname.trim() === "") {

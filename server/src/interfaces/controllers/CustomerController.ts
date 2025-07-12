@@ -19,7 +19,7 @@ interface CustomError extends Error {
   status?: number;
 }
 export const adminServices = async (req: Request, res: Response) => {
-  try {console.log("reached for fetchinga admin services")
+  try {
      const services = container.resolve(AdminServicesUsecase);
      const serviceslist = await services.execute("service");
      res.status(200).json({ serviceslist });

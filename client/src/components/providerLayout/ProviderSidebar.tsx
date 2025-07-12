@@ -45,6 +45,9 @@ const Sidebar: React.FC<AdminSidebarProps> = ({ onCollapse }) => {
     { label: "BOOKINGS", icon: <FaBox />, path: "/provider/bookings" },
     { label: "PAYMENTS", icon: <FaMoneyBill />, path: "/payments" },
     { label: "REPORT", icon: <FaChartBar />, path: "/report" },
+        { label: "WALLET", icon: <FaChartBar />, path: "/provider/wallet" },
+
+    
   ];
   const imagePath = "providerServices/";
   const API = import.meta.env.VITE_API_URL;

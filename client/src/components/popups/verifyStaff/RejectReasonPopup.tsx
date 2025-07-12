@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { toast,ToastContainer } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import adminAxiosClient from "../../../api/adminAxiosClient";
 
 interface RejectReasonPopupProps {
@@ -19,7 +19,7 @@ const RejectReasonPopup: React.FC<RejectReasonPopupProps> = ({
 
   const handleReject = async () => {
     if (!reason.trim()) {
-      toast.error("Please enter a reason.")
+      toast.error("Please enter a reason.");
       return;
     }
 
@@ -27,6 +27,7 @@ const RejectReasonPopup: React.FC<RejectReasonPopupProps> = ({
       await adminAxiosClient.post(api, {
         staffId: data._id,
         reason,
+        data:data
       });
       toast.success("Staff rejected successfully");
       setShowPopup();
@@ -37,16 +38,15 @@ const RejectReasonPopup: React.FC<RejectReasonPopupProps> = ({
   };
 
   return (
-        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
-           <ToastContainer
-                   position="top-center"
-                   autoClose={5000}
-                   hideProgressBar={false}
-                   closeOnClick
-                   pauseOnHover
-                 />
+    <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
+      <ToastContainer
+        position="top-center"
+        autoClose={5000}
+        hideProgressBar={false}
+        closeOnClick
+        pauseOnHover
+      />
       <div className="p-6 bg-white rounded-xl shadow-md w-[90%] max-w-md">
-
         <h3 className="text-lg font-bold mb-3 text-[#5A52A4]">Reject Staff</h3>
         <textarea
           value={reason}

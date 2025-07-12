@@ -88,7 +88,6 @@ export class UserRepositoryImpl implements UserRepository {
     return true;
   }
   async findProviderById(id: string): Promise<User | null> {
-    console.log(id+"here comes")
     const user = await UserModel.findOne({
       _id: id
       // $or: [{ role: "provider" }, { role: "worker" }],
@@ -223,7 +222,6 @@ export class UserRepositoryImpl implements UserRepository {
       isNaN(addressData.longitude) ||
       isNaN(addressData.latitude)
     ) {
-      console.error('Invalid coordinates received:', addressData.longitude, addressData.latitude);
       throw new Error('Invalid coordinates provided for geoLocation.');
     }
 
@@ -408,7 +406,6 @@ export class UserRepositoryImpl implements UserRepository {
 
     const staffs = result[0].data;
     const count = result[0].totalCount[0]?.count || 0;
-    console.log(JSON.stringify(staffs.services, null, 2));
     return {
       data: staffs.map((staff: any) => ({
         ...staff,
@@ -551,7 +548,6 @@ if (!mongoose.Types.ObjectId.isValid(id.trim())) {
   { new: true, lean: true }
 );
    
- console.log(updated?.image+"  data impl")
     if (!updated) {
       throw new Error("Failed to update Provider");
     }
@@ -641,7 +637,6 @@ async   fetchUserById
   limit: number = 3,
   providerId: string
 ): Promise<StaffListResponse> {
-  console.log(providerId+" provid")
   const skip = (page - 1) * limit;
   const result = await UserModel.aggregate([
     { $match: { type: "staff" ,providerId:new mongoose.Types.ObjectId(providerId)} },

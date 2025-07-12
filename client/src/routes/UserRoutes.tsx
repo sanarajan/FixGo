@@ -21,6 +21,7 @@ import PaymentCancel from "../customer/pages/payment/PaymentCancel";
 import BookingList from "../customer/pages/bookings/BookingList";
 import BookingDetails from "../customer/pages/bookings/BookingDetails";
 import CustomerProfile from "../customer/pages/profile/CustomerProfile"
+import CustomerWallet from "../customer/pages/wallet/CustomerWallet";
 const UserRoutes = () => {
   return (
     <div>
@@ -86,6 +87,7 @@ const UserRoutes = () => {
          <Route path="/bookings" element={<BookingList />} />
          <Route path="/bookingDetails" element={<BookingDetails />} />
          <Route path="/profile" element={<CustomerProfile />} />
+         <Route path="/wallet" element={<CustomerWallet />} />
 
 
 

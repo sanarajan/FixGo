@@ -29,6 +29,10 @@ import {IOfferCouponRepositoryImpl} from "../../infrastructure/database/reposito
 import { NotificationService } from "../../application/services/NotificationService";
 import { SocketServiceImpl } from "../../infrastructure/services/sockets/SocketServiceImpl";
 import { ISocketService } from "../../domain/services/sockets/ISocketService";
+import { INotificationRepository } from "../../domain/repositories/INotificationRepository";
+import { INotificationRepositoryImpl } from "../../infrastructure/database/repositories/INotificationRepositoryImpl"
+import { WalletRepository } from "../../domain/repositories/WalletRepository";
+import { WalletRepositoryImpl } from "../../infrastructure/database/repositories/WalletRepositoryImpl";
 
 container.registerSingleton<ISocketService>("SocketService", SocketServiceImpl);
 // Register interfaces to concrete implementations
@@ -78,3 +82,8 @@ container.register<IOfferCouponRepository>('IOfferCouponRepository', {
 container.register<NotificationService>("NotificationService", {
   useClass: NotificationService,
 });
+container.register<INotificationRepository>("INotificationRepository", {
+  useClass: INotificationRepositoryImpl,
+});
+container.register<WalletRepository>("WalletRepository", WalletRepositoryImpl);
+

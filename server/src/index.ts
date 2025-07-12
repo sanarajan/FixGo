@@ -7,17 +7,25 @@ import { connectDB } from "./config/database";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import bodyParser from "body-parser";
-import http from "http";
 import userRoutes from "./interfaces/routes/authRoutes";
 import adminRoutes from "./interfaces/routes/adminRoutes";
 import providerRoutes from "./interfaces/routes/providerRoutes";
 import stripeRoutes from "./interfaces/routes/stripeRoute";
+import { ISocketService } from "./domain/services/sockets/ISocketService";
+
 import { setupSocket } from "./shared/helpers/Socket"; 
+import http from "http";
+import { container } from "tsyringe";
+import { SocketServiceImpl } from "./infrastructure/services/sockets/SocketServiceImpl";
 
 import path from "path";
+
 // Register ts-node loader for ESM
 const app = express();
-
+const server = http.createServer(app); // ✅ Only one server
+const io = setupSocket(server);
+const socketService = container.resolve<ISocketService>("SocketService");
+socketService.setSocketServer(io);
 //  middlewares
 app.use(cookieParser());
 app.use(
@@ -51,8 +59,6 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/provider", providerRoutes);
 
 connectDB();
-const server = http.createServer(app); // ✅ Required for socket.io
-setupSocket(server);
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(` Server running at http://localhost:${PORT}`);
