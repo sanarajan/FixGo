@@ -21,6 +21,21 @@ const StaffsList = ({ userType }: CustomersProps) => {
   useEffect(() => {
     fetchUsers();
   }, [page]);
+  useEffect(() => {
+  // Listen for custom "staffRejected" event
+  const handleStaffRejected = () => {
+    console.log("🔁 staffRejected event received, refreshing staff list...");
+    refresh();
+  };
+
+  window.addEventListener("staffRejected", handleStaffRejected);
+
+  // Cleanup
+  return () => {
+    window.removeEventListener("staffRejected", handleStaffRejected);
+  };
+}, []);
+
   const refresh = () => fetchUsers();
   const fetchUsers = async () => {
     try {
@@ -50,7 +65,6 @@ const StaffsList = ({ userType }: CustomersProps) => {
       user.username.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }
-  console.log(JSON.stringify(users,null,2),"users in staffs list");
   return (
     <ProviderLayout>
       <TableList

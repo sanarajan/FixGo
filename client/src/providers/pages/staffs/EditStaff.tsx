@@ -38,8 +38,8 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
   });
   const location = useLocation();
   const staffItem = location.state;
-  let rejected =false;
- rejected = location.state.rejected;
+  const rejected: boolean = location.state?.rejected ?? false;
+
   const verified = staffItem.verified;
   const [selectedServices, setSelectedServices] = useState<{
     [key: string]: string[];
@@ -234,78 +234,75 @@ const EditStaff: React.FC<CustomersProps> = ({ userType }) => {
     }
   };
 
-  const handleSubmit = async () => {  
+  const handleSubmit = async () => {
     const { isValid, errors } = validateForm(formData);
     let serviceValid;
-    if (isStaffVerified) {     
-
+    if (isStaffVerified) {
       if (formData.verified) {
         serviceValid = isServiceSelectionValid(selectedServices);
-      }   
-       if (!serviceValid && formData.verified) {
+      }
+      if (!serviceValid && formData.verified) {
         setFormErrors(errors);
         toast.error("Please select services");
         return;
       }
     }
-      const finalLocation = locationAddress ?? formData.location;
-      if (!isValid) {
-        setFormErrors(errors);
-        toast.error(errors.email);
-        return;
-      }
-      // if (!serviceValid &&isStaffVerified) {
-     
-      if (!finalLocation) {
-        toast.error("Location is required");
-        return;
-      }
-      const orgService = staffItem.staffServices || [];
-      const changeService = hasDataChanged(orgService, selectedServices);
+    const finalLocation = locationAddress ?? formData.location;
+    if (!isValid) {
+      setFormErrors(errors);
+      toast.error(errors.email);
+      return;
+    }
+    // if (!serviceValid &&isStaffVerified) {
 
-      const imageString = formData.image ? formData.image.name : null;
+    if (!finalLocation) {
+      toast.error("Location is required");
+      return;
+    }
+    const orgService = staffItem.staffServices || [];
+    const changeService = hasDataChanged(orgService, selectedServices);
 
-      const formPayload = new FormData();
-      formPayload.append("fullname", formData.fullname);
-      formPayload.append("email", formData.email);
-      formPayload.append("username", "");
-formPayload.append("rejected", rejected.toString());
+    const imageString = formData.image ? formData.image.name : null;
 
-      formPayload.append("phone", formData.phone);
-      formPayload.append("type", "staff");
-      formPayload.append("location", finalLocation ?? "");
-      formPayload.append("latitude", coordinates?.lat.toString() ?? "");
-      formPayload.append("longitude", coordinates?.lng.toString() ?? "");
+    const formPayload = new FormData();
+    formPayload.append("fullname", formData.fullname);
+    formPayload.append("email", formData.email);
+    formPayload.append("username", "");
+    formPayload.append("rejected", rejected.toString());
 
+    formPayload.append("phone", formData.phone);
+    formPayload.append("type", "staff");
+    formPayload.append("location", finalLocation ?? "");
+    formPayload.append("latitude", coordinates?.lat.toString() ?? "");
+    formPayload.append("longitude", coordinates?.lng.toString() ?? "");
 
-      if (formData.image) formPayload.append("image", formData.image);
-      // if (changeService &&isStaffVerified) {
-      //   console.log(JSON.stringify(selectedServices)+"  stringify")
-      if (changeService && formData.verified) {
-        formPayload.append("services", JSON.stringify(selectedServices));
-        formPayload.append("oldServices", JSON.stringify(orgService));
-      }
-      try {
-        const response = await axiosClient.patch(
-          `/api/provider/editStaff/${staffItem._id}`,
-          formPayload,
-          {
-            headers: {
-              userRole: userType,
-            },
-          }
-        );
-        if (response.status === 200) {
-          toast.success("Staff updated successfully");
-          navigate("/provider/staffs");
-        } else {
-          toast.error("Failed to update staff. Please try again.");
+    if (formData.image) formPayload.append("image", formData.image);
+    // if (changeService &&isStaffVerified) {
+    //   console.log(JSON.stringify(selectedServices)+"  stringify")
+    if (changeService && formData.verified) {
+      formPayload.append("services", JSON.stringify(selectedServices));
+      formPayload.append("oldServices", JSON.stringify(orgService));
+    }
+    try {
+      const response = await axiosClient.patch(
+        `/api/provider/editStaff/${staffItem._id}`,
+        formPayload,
+        {
+          headers: {
+            userRole: userType,
+          },
         }
-      } catch (err) {
-        console.error("Error updating staff:", err);
-        toast.error("An error occurred while updating staff");
+      );
+      if (response.status === 200) {
+        toast.success("Staff updated successfully");
+        navigate("/provider/staffs");
+      } else {
+        toast.error("Failed to update staff. Please try again.");
       }
-   
+    } catch (err) {
+      console.error("Error updating staff:", err);
+      toast.error("An error occurred while updating staff");
+    }
   };
 
   const handleLocationSelect = (coords: {
@@ -320,31 +317,31 @@ formPayload.append("rejected", rejected.toString());
   };
 
   const handleSaveServices = async () => {
-  try {
-    const response = await axiosClient.post(
-      "/api/provider/saveStaffServices",
-      {
-        staffId: staffItem._id,
-        services: selectedServices,
-      },
-      {
-        headers: {
-          userRole: userType,
+    try {
+      const response = await axiosClient.post(
+        "/api/provider/saveStaffServices",
+        {
+          staffId: staffItem._id,
+          services: selectedServices,
         },
-      }
-    );
+        {
+          headers: {
+            userRole: userType,
+          },
+        }
+      );
 
-    if (response.status === 200) {
-      toast.success("Services saved successfully");
-      setShowServiceModal(false);
-    } else {
-      toast.error("Failed to save services");
+      if (response.status === 200) {
+        toast.success("Services saved successfully");
+        setShowServiceModal(false);
+      } else {
+        toast.error("Failed to save services");
+      }
+    } catch (error) {
+      console.error("Error saving staff services:", error);
+      toast.error("An error occurred while saving services");
     }
-  } catch (error) {
-    console.error("Error saving staff services:", error);
-    toast.error("An error occurred while saving services");
-  }
-};
+  };
 
   const googlekey = import.meta.env.VITE_GOOGLEAPI_KEY;
   const API = import.meta.env.VITE_API_URL;
@@ -361,7 +358,6 @@ formPayload.append("rejected", rejected.toString());
   } else {
     imageURL = "noimage.png";
   }
-
 
   return (
     <ProviderLayout>
@@ -570,9 +566,6 @@ formPayload.append("rejected", rejected.toString());
           </button>
         </div>
       </div>
- 
-
-
     </ProviderLayout>
   );
 };

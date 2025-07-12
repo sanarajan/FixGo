@@ -25,6 +25,8 @@ const menuItems: MenuItem[] = [
 
   { label: 'PAYMENTS', icon: <FaMoneyBill />, path: '/payments' },
   { label: 'REPORT', icon: <FaChartBar />, path: '/report' },
+  { label: 'WALLET', icon: <FaChartBar />, path: '/wallet' },
+  
 ];
 interface AdminSidebarProps {
   onCollapse: () => void; // 

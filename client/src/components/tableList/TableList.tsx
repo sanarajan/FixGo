@@ -56,7 +56,7 @@ interface TableListProps<T> {
   extraProps?: Record<string, any>;
   refresh?: () => void; // NEW
   imagePath?: string;
-  handleStaffClick?: (providerId: string) => void;
+  handleStaffClick?: (providerId: string,email:string) => void;
 }
 
 interface ServiceData {
@@ -194,7 +194,7 @@ const TableList = <T extends Record<string, any>>({
         return (
           <button
             className="bg-blue-500 text-white px-2 py-1 rounded text-xs"
-            onClick={() => handleStaffClick?.(data._id)}
+            onClick={() => handleStaffClick?.(data._id,data.email)}
           >
             Staffs
           </button>
