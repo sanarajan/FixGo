@@ -26,7 +26,9 @@ const AdminChangePassword = ({ close }: ProviderChangePasswordProps) => {
     password: "",
     confirmPassword: "",
   });
-
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -107,50 +109,75 @@ const AdminChangePassword = ({ close }: ProviderChangePasswordProps) => {
           <label className="text-sm font-semibold px-2 py-3">
             Current password
           </label>
-          <input
-            type="password"
-            name="currentPassword"
-            placeholder="Current Password"
-            className="w-full px-4 py-3 bg-gray-100 rounded-lg text-sm"
-            value={formData.currentPassword}
-            onChange={handleInputChange}
-          />
+          <div className="relative">
+            <input
+              type={showCurrentPassword ? "text" : "password"}
+              name="currentPassword"
+              placeholder="Current Password"
+              className="w-full px-4 py-3 bg-gray-100 rounded-lg text-sm pr-10"
+              value={formData.currentPassword}
+              onChange={handleInputChange}
+            />
+            <button
+              type="button"
+              onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+              className="absolute top-3 right-3 text-gray-500"
+            >
+              {showCurrentPassword ? "👁" : "👁️‍🗨️"}
+            </button>
+          </div>
           {errors["currentPassword"] && (
             <p className="text-sm text-red-500 -mt-2">
               {errors["currentPassword"]}
             </p>
           )}
-          <label className="text-sm font-semibold px-2 py-3">[Password]</label>
-          <input
-            type="text"
-            name="password"
-            placeholder="Password"
-            className="w-full px-4 py-3 bg-gray-100 rounded-lg text-sm"
-            value={formData.password}
-            onChange={handleInputChange}
-          />
+         <label className="text-sm font-semibold px-2 py-3">Password</label>
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              name="password"
+              placeholder="Password"
+              className="w-full px-4 py-3 bg-gray-100 rounded-lg text-sm pr-10"
+              value={formData.password}
+              onChange={handleInputChange}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute top-3 right-3 text-gray-500"
+            >
+              {showPassword ? "👁" : "👁️‍🗨️"}
+            </button>
+          </div>
           {errors["password"] && (
             <p className="text-sm text-red-500 -mt-2">{errors["password"]}</p>
           )}
-          <label className="text-sm font-semibold px-2 py-3">
-            {" "}
-            Confirm pasword
-          </label>
 
-          <input
-            type="text"
-            name="confirmPassword"
-            placeholder="Password"
-            className="w-full px-4 py-3 bg-gray-100 rounded-lg text-sm"
-            value={formData.confirmPassword}
-            onChange={handleInputChange}
-          />
+          <label className="text-sm font-semibold px-2 py-3">
+            Confirm password
+          </label>
+          <div className="relative">
+            <input
+              type={showConfirmPassword ? "text" : "password"}
+              name="confirmPassword"
+              placeholder="Confirm Password"
+              className="w-full px-4 py-3 bg-gray-100 rounded-lg text-sm pr-10"
+              value={formData.confirmPassword}
+              onChange={handleInputChange}
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="absolute top-3 right-3 text-gray-500"
+            >
+              {showConfirmPassword ? "👁" : "👁️‍🗨️"}
+            </button>
+          </div>
           {errors["confirmPassword"] && (
             <p className="text-sm text-red-500 -mt-2">
               {errors["confirmPassword"]}
             </p>
           )}
-
           <button
             onClick={handleSubmit}
             className={`w-full bg-[#5A52A4] text-white py-2 rounded-lg font-semibold ${

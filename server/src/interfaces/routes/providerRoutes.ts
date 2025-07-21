@@ -24,8 +24,10 @@ import {
   listingServiceForStaff,
   servicesAndSubcategories,
   getSubcategoriesByServiceId,
+   getWallet,
+  getTransactions
 } from "../controllers/ProviderController";
-import { bookingList } from "../controllers/OrderController";
+import { bookingList,updateBookingStatus,bookingOtpVerify,endServiceWithInvoice } from "../controllers/OrderController";
 import { saveStaffServices,fetchRejectedStaff } from "../controllers/StaffController";
 import {
   addOffer,
@@ -36,7 +38,8 @@ import {
   couponList,
   editCoupon
 } from "../controllers/OfferCouponController";
-import { notifications } from "../controllers/NotificationController"
+import { notifications } from "../controllers/NotificationController";
+import {providerCancelBooking} from "../controllers/PaymentController";
 import { protectedRoute } from "../../middlewares/authMiddleware";
 router.get("/customersList", protectedRoute, getAllCustomers);
 router.get("/customerView/:id", protectedRoute, customerView);
@@ -111,9 +114,13 @@ router.get("/couponList", protectedRoute, couponList);
 router.patch("/editCoupon/:id", protectedRoute,upload.single("couponImage"), editCoupon);
 router.get("/notifications", protectedRoute, notifications);
 router.get("/fetchRejectedStaff/:staffId", protectedRoute, fetchRejectedStaff);
+router.get("/wallet", protectedRoute, getWallet);
+router.get("/transactions", protectedRoute, getTransactions);
 
-
-
+router.patch("/providerCancelBooking", protectedRoute, providerCancelBooking);
+router.patch("/updateBookingStatus", protectedRoute, updateBookingStatus);
+router.post("/bookingOtpVerify",protectedRoute, bookingOtpVerify);
+router.post("/endServiceWithInvoice",protectedRoute, endServiceWithInvoice);
 
 
 export default router;

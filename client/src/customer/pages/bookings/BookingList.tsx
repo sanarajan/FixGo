@@ -41,6 +41,7 @@ const BookingList = () => {
 
   imageURL = `${API}/uploads/${imagePath}`;
   let noimg = "noimage.png";
+  // console.log(JSON.stringify(bookings, null, 2) + "BOOKING in list");
   return (
     <CustomerLayoutWithSidebar>
       <div className="p-6 bg-[#F9F9FB] min-h-screen font-sans">
@@ -108,9 +109,15 @@ const BookingList = () => {
                     <div className="text-[#2c2c2c] font-semibold">
                       ₹{(booking.amount.invoiceAmount || 0).toFixed(2)}{" "}
                       <span className="text-green-600 text-sm font-medium">
-                        ({booking.amount.offerValue || "0" }{booking.amount.offerType === "percentage" ? "%" : "₹"} ) off
+                        ({booking.amount.offerValue || "0"}
+                        {booking.amount.offerType === "percentage"
+                          ? "%"
+                          : "₹"}{" "}
+                        ) off
                       </span>
-                       <span className="ms-2 text-sm text-gray-500 line-through">₹{booking.amount.total}</span>
+                      <span className="ms-2 text-sm text-gray-500 line-through">
+                        ₹{booking.amount.total}
+                      </span>
                     </div>
                   </div>
 
@@ -128,10 +135,8 @@ const BookingList = () => {
                       {booking.providerId?.fullname || "N/A"}
                     </p>
                     <p>
-                    
                       <MdPayment className="inline" /> PAYMENT: ₹
-                      {booking.amount.advancePaid
-                       }
+                      {booking.amount.advancePaid}
                     </p>
                   </div>
 
@@ -139,7 +144,7 @@ const BookingList = () => {
                     <div>
                       {/* <p className="text-gray-500">{booking.bookingDate}</p> */}
                       <p className="text-gray-600 font-medium">
-                        BOOKING ID: #{booking._id?.slice(-6).toUpperCase()}
+                        BOOKING ID: #{booking.workerId}
                       </p>
                     </div>
                     <span

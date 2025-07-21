@@ -25,7 +25,6 @@ export class EmailVerifications {
     }
     const otp = await this.otpService.generateAndSaveOtp(email);
     await this.emailService.sendOtpEmail(email, otp); 
-      console.log(`OTP for ${email}: ${otp}`);
     return otp;
   }
 }

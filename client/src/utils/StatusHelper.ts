@@ -4,12 +4,12 @@
         return "bg-red-500";
       case "Upcoming":
         return "bg-yellow-500";
-      case "OnGoing":
+      case "Ongoing":
         return "bg-orange-500";
       case "Completed":
         return "bg-green-600";
       case "Cancelled":
-        return "bg-grey-600";
+   return "bg-black";
       default:
         return "bg-black-400";
     }

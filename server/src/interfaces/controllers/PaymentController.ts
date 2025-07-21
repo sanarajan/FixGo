@@ -5,7 +5,8 @@ import { container } from "tsyringe";
 import Stripe from "stripe";
 import { OrdersModel } from "../../infrastructure/database/models/OrdersModel";
 import { IOrder } from "../../domain/models/IOrder";
-
+import { CancelBookingUseCase } from "../../application/use-cases/customer/cancelBooking/CancelBookingUseCase";
+import { ProviderCancelBookingUseCase } from "../../application/use-cases/provider/cancelBooking/ProviderCancelBookingUseCase";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 //this only for local usage. for public domain we use STRIPE_SECRET_KEY instead of this
 const  endpointSecret = process.env.ENDPOINTSECRET
@@ -14,21 +15,14 @@ export const create_checkout_session = async (
   res: Response
 ): Promise<void> => {
   try {
-            console.log("reche")
 
     const { ordrData, savingOrder } = req.body;
-        console.log("reche"+ordrData)
 
     let { amount, serviceId } = ordrData;
 
     const admin = (req as any).user;
     const customerId = admin.id;
-console.log("Request Reached Controller");
-console.log("ordrData:", ordrData);
-console.log("savingOrder:", savingOrder);
-console.log("amount:", amount);
-console.log("customerId:", customerId);
-console.log("serviceId:", serviceId);
+
 
     savingOrder.customerId = customerId;
     savingOrder.createdBy = customerId;
@@ -55,7 +49,6 @@ if (isNaN(amount) || amount < 50) {
       savingOrder,
     });
 
-    console.log("reach last");
     res.json({ url });
   } catch (error:any) {
     console.error("PaymentController Error:", error);
@@ -88,7 +81,6 @@ console.log(endpointSecret+" stripeid")
   }
 
   if (event.type === "checkout.session.completed") {
-console.log(" conmpleted")
 
     const session = event.data.object as Stripe.Checkout.Session;
     // console.log("Payment completed for session:", session.id);
@@ -102,7 +94,9 @@ console.log(" conmpleted")
 
     await OrdersModel.findByIdAndUpdate(orderId, {
       paymentStatus: "advance paid",
-      bookingStatus:"Upcoming",
+      // bookingStatus:"Upcoming",
+            bookingStatus:"Pending",
+
       paymentIntentId: paymentIntentId,
       updatedAt: new Date(),
       $push: {
@@ -170,4 +164,51 @@ console.log(" conmpleted")
 
   // Always send 200 response after handling the event
   res.status(200).send("Received webhook");
+};
+
+export const cancelBooking = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+   
+    const customer = (req as any).user;
+    const customerId = customer.id; 
+   const  {bookingId, reason,isEligibleForRefund} = req.body;
+   console.log(reason+" reason camcelling")
+    const cancelBooking = container.resolve(CancelBookingUseCase);
+   
+    const canclBook = await cancelBooking.execute(customerId, bookingId, reason);
+
+    res
+      .status(200)
+      .json({ canclBook: canclBook });
+  } catch (error) {
+    console.error("PaymentController Error:", error);
+    res.status(500).send("Internal Server Error");
+  }
+};
+
+export const providerCancelBooking = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+   
+    const customer = (req as any).user;
+    const providerId = customer.id; 
+    console.log(providerId+" ADMIN ID SHOW")
+   const  {bookingId, reason,isEligibleForRefund} = req.body;
+   console.log(reason+" reason camcelling")
+    const cancelBooking = container.resolve(ProviderCancelBookingUseCase);
+   
+    const canclBook = await cancelBooking.execute(providerId, bookingId, reason);
+
+    res
+      .status(200)
+      .json({ canclBook: canclBook });
+  } catch (error) {
+    console.error("PaymentController Error:", error);
+    res.status(500).send("Internal Server Error");
+  }
 };

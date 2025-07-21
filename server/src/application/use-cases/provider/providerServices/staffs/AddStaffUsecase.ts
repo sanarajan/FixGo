@@ -7,13 +7,18 @@ import { ServiceModel } from "../../../../../infrastructure/database/models/Serv
 import { SubcategoryModel } from "../../../../../infrastructure/database/models/SubcategoryModel";
 import { ProviderServicesModel } from "../../../../../infrastructure/database/models/ProviderServicesModel";
 import { Iaddresses } from "../../../../../domain/models/Iaddresses";
-
+import {HashService} from "../../../../services/HashService";
+import {EmailService} from "../../../../services/EmailService"
 @injectable()
 export class AddStaffUsecase {
   constructor(
     @inject("UserRepository") private userRepository: UserRepository,
     @inject("IproviderServicesRepository")
-    private staffServiceRepo: IproviderServicesRepository
+    private staffServiceRepo: IproviderServicesRepository,
+    @inject("HashService") private hashService: HashService,
+       @inject("EmailService") private emailService: EmailService
+    
+
   ) {}
 
   public async execute(
@@ -46,6 +51,12 @@ export class AddStaffUsecase {
       throw Object.assign(new Error("Phone number already exists"), {
         status: 400,
       });
+          const providerdata = await this.userRepository.findProviderById(adminId);
+
+      const providerName =providerdata?.fullname
+const plainPassword = Math.random().toString(36).slice(-6);
+const hashedPassword = await this.hashService.hash(plainPassword);
+user.password = hashedPassword;
 
     // Create user
     user.role = "provider";
@@ -121,7 +132,8 @@ export class AddStaffUsecase {
         await this.userRepository.addAddress(addressData as Iaddresses);
       }
     }
-
+    if(createdUser)
+      await this.emailService.passwordSend(user.fullname||"",user.email,plainPassword,providerName||"");
     return createdUser;
   }
 }

@@ -8,7 +8,9 @@ export interface IOrderAmount {
   remaining?: number;
  offerType?: "percentage" | "price"|"";
   offertValue?: number;
-  refferralCode?: string;
+  refferralCode?: string; 
+  purchaseCharge?:number;
+  finalInvoice?:number 
 }
 
 export interface IOrderSlot {

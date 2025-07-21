@@ -62,6 +62,8 @@ const OrdersSchema: Schema = new Schema(
     enum: ["offer", "coupon", ""],
     default: "",
   },
+  purchaseCharge:{ type: Number, default: 0 },
+  finalInvoice:{ type: Number, default: 0 },
     },
     
 

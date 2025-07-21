@@ -3,14 +3,14 @@ import { inject, injectable } from "tsyringe";
 import { User } from "../../domain/models/User";
 import { UserRepository } from "../../domain/repositories/UserRepository";
 import { HashService } from "../services/HashService";
-import { WalletRepository } from "../../domain/repositories/WalletRepository";
+import { IWalletRepository } from "../../domain/repositories/IWalletRepository";
 
 @injectable()
 export class RegisterUser {
   constructor(
     @inject("UserRepository") private userRepository: UserRepository,
     @inject("HashService") private hashService: HashService,
-    @inject("WalletRepository") private walletRepo: WalletRepository
+    @inject("WalletRepository") private walletRepo: IWalletRepository
 
   ) {}
 

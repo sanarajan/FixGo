@@ -27,10 +27,12 @@ import {adminServices,
   saveProfileImage,
   customerEditPersonal,
   customerEditAddress,
-  customerPasswordReset
+  customerPasswordReset,
+  getWallet,
+  getTransactions
 } from "../controllers/CustomerController"
-import { create_checkout_session,stripeWebhook  } from "../controllers/PaymentController";
-import {customerBookings} from "../controllers/OrderController";
+import { create_checkout_session,stripeWebhook,cancelBooking  } from "../controllers/PaymentController";
+import {customerBookings,bookingDetails} from "../controllers/OrderController";
 import {
   showCoupons
 } from "../controllers/OfferCouponController";
@@ -68,6 +70,13 @@ router.patch("/customerEditAddress", customerAuthProtect, customerEditAddress);
 router.post("/customerPasswordReset",customerAuthProtect, customerPasswordReset);
 
 router.get("/showCoupons/:providerId", customerAuthProtect, showCoupons);
+router.patch("/cancelBooking", customerAuthProtect, cancelBooking);
+router.get("/wallet", customerAuthProtect, getWallet);
+router.get("/transactions", customerAuthProtect, getTransactions);
+router.get("/bookingDetails/:id", customerAuthProtect, bookingDetails);
+
+
+
 
 
 

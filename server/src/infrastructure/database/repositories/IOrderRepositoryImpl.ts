@@ -67,4 +67,32 @@ const totalCount = await OrdersModel.countDocuments(query);
 
     return { orders, totalCount };
   }
+   async findById(id: string): Promise<IOrder | null> {
+    return OrdersModel.findById(id).exec();
+  }
+
+  async updateById(id: string, update: any): Promise<IOrder | null> {
+    return OrdersModel.findByIdAndUpdate(id, update, { new: true }).exec();
+  }
+  async bookingDetails(  customerId: string,bookingId:string): Promise<{ order: IOrder }>{
+    const query = { customerId ,_id:bookingId};
+
+  const order = await OrdersModel.find(query)
+    .populate("serviceId", "serviceName")
+    .populate("subcategoryId", "subcategory")
+    .populate("providerId", "fullname email phone image")
+    .populate("customerId", "fullname email phone image") // note: just use image, don't alias as `custImage`
+    .populate("providerServiceId", "image  description features")  
+    
+   .lean<IOrder>();
+console.log(JSON.stringify(order,null,2)+" orders nte thendi")
+  if (!order) {
+    throw new Error("Booking not found");
+  }
+
+  return { order: order };
+  }
+
+
+
 }
