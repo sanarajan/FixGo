@@ -1,15 +1,23 @@
-import React, { useState,useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import noImage from "../../assets/images/noimage.png";
 import EnhancedPagination from "../../components/Pagination";
 import { motion, AnimatePresence } from "framer-motion";
 import { getNestedValue } from "../../utils/NestedKeyHelper";
+
 interface Heading {
   key: string;
   label: string;
-  type?: "image" | "status" | "text"|"bookingStatus"|"paymentStatus";
+  type?:
+    | "image"
+    | "status"
+    | "text"
+    | "bookingStatus"
+    | "paymentStatus"
+    | "updateStatus";
 }
+
 interface ActionConfigItem {
   type: "popup" | "page";
   path?: string;
@@ -27,34 +35,30 @@ interface TableListProps<T> {
   pagesize: number;
   busy?: boolean;
   userType?: string;
-
-  // allservices?:T[]
   headings: Heading[];
   showSubcategory: boolean;
-  showActions?: ("view" | "edit" | "delete" | "blockUnblock")[];
-
+  showActions?: (
+    | "view"
+    | "edit"
+    | "delete"
+    | "blockUnblock"
+    | "updateStatus"
+  )[];
   actionConfig: {
     add?: ActionConfigItem;
     edit?: ActionConfigItem;
     view?: ActionConfigItem;
     blockUnblock?: ActionConfigItem;
-    delete?: ActionConfigItem; // ← NEW
+    delete?: ActionConfigItem;
+    updateStatus?: ActionConfigItem;
   };
   extraProps?: Record<string, any>;
-  refresh?: () => void; // NEW
+  refresh?: () => void;
   imagePath?: string;
 }
 
-interface ServiceData {
-  serviceName: string;
-  isActive: boolean;
-  [key: string]: any;
-}
-
-type PopupType = "add" | "edit" | "view" | "blockUnblock" | "delete";
-
 interface PopupState<T> {
-  type: PopupType;
+  type: "add" | "edit" | "view" | "blockUnblock" | "delete" | "updateStatus";
   data?: T;
   headings?: T;
 }
@@ -75,15 +79,20 @@ const BookingTableList = <T extends Record<string, any>>({
   actionConfig,
   extraProps = {},
   refresh,
-  imagePath
+  imagePath,
 }: TableListProps<T>) => {
-
   const [popupState, setPopupState] = useState<PopupState<T> | null>(null);
-
   const [formData, setFormData] = useState({ name: "", status: "Active" });
   const navigate = useNavigate();
+
   const handleAction = (
-    action: "add" | "edit" | "view" | "blockUnblock" | "delete",
+    action:
+      | "add"
+      | "edit"
+      | "view"
+      | "blockUnblock"
+      | "delete"
+      | "updateStatus",
     item?: T
   ) => {
     const config = actionConfig[action];
@@ -100,12 +109,7 @@ const BookingTableList = <T extends Record<string, any>>({
     if (!popupState) return null;
     const cfg = actionConfig[popupState.type];
     if (!cfg || cfg.type !== "popup" || !cfg.component) return null;
-
     const Popup = cfg.component;
-    //pagination
-    const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
-      setPage(value);
-    };
     return (
       <Popup
         imagePath={imagePath}
@@ -121,22 +125,19 @@ const BookingTableList = <T extends Record<string, any>>({
       />
     );
   };
+
   const renderCell = (data: T, heading: Heading) => {
     const value = getNestedValue(data, heading.key);
-
     if (heading.key === "serviceName") {
-      const serviceName =
-        (data as any)?.serviceId?.serviceName || data.serviceName;
-      return serviceName;
+      return (data as any)?.serviceId?.serviceName || data.serviceName;
     }
-    console.log(imagePath+" imagepath")
+
     if (heading.type === "image") {
       const API = import.meta.env.VITE_API_URL;
-      let imageuRL =  API + "/uploads/" + imagePath + value
-      if(!value){
-        imageuRL =`${API}/asset/noimage.png`
-      }    
-     
+      let imageuRL = `${API}/uploads/${imagePath}${value}`;
+      if (!value) {
+        imageuRL = `${API}/asset/noimage.png`;
+      }
       return (
         <div className="flex justify-center">
           <img
@@ -147,6 +148,7 @@ const BookingTableList = <T extends Record<string, any>>({
         </div>
       );
     }
+
     if (heading.type === "status" && showActions?.includes("blockUnblock")) {
       return (
         <span
@@ -159,25 +161,47 @@ const BookingTableList = <T extends Record<string, any>>({
         </span>
       );
     }
-    if (heading.type === "bookingStatus" && showActions?.includes("blockUnblock")) {
+
+    if (
+      heading.type === "updateStatus" &&
+      showActions?.includes("updateStatus")
+    ) {
+      let bgClass = "bg-blue-500";
+      if (value === "Pending") bgClass = "bg-red-500";
+      if (value === "Upcoming") bgClass = "bg-orange-500";
+      if (value === "Ongoing") bgClass = "bg-yellow-500";
+      if (value === "Completed") bgClass = "bg-green-500";
+      if (value === "Cancelled") bgClass = "bg-black";
+
+      const isSameDate = (
+        date1: string | Date,
+        date2: string | Date
+      ): boolean => {
+        const d1 = new Date(date1);
+        const d2 = new Date(date2);
+        return (
+          d1.getFullYear() === d2.getFullYear() &&
+          d1.getMonth() === d2.getMonth() &&
+          d1.getDate() === d2.getDate()
+        );
+      };
+
+      const today = new Date();
+
       return (
         <span
-          onClick={() => handleAction("blockUnblock", data)}
-          className={`px-2 py-1 text-xs font-semibold rounded-full ${
-            value === "Active" ? "bg-green-500" : "bg-red-500"
-          } text-white`}
-        >
-          {value}
-        </span>
-      );
-    }
-      if (heading.type === "paymentStatus" && showActions?.includes("blockUnblock")) {
-      return (
-        <span
-          onClick={() => handleAction("blockUnblock", data)}
-          className={`px-2 py-1 text-xs font-semibold rounded-full ${
-            value === "Active" ? "bg-green-500" : "bg-red-500"
-          } text-white`}
+          onClick={() => {
+            if (value === "Upcoming" ) {
+              if (isSameDate(data.slot.date, today)) {
+                handleAction("updateStatus", data); // Show popup ONLY if date matches
+              }
+            } else if (value !== "Upcoming" ) {
+              // For all other statuses, always show their popup
+              handleAction("updateStatus", data);
+            }
+            // If value is "Ongoing" or "Upcoming" and date not matching → do nothing extra
+          }}
+          className={`px-2 py-1 text-xs font-semibold rounded-full ${bgClass} text-white cursor-pointer`}
         >
           {value}
         </span>
@@ -186,12 +210,9 @@ const BookingTableList = <T extends Record<string, any>>({
 
     return <>{value}</>;
   };
-  
 
-  const viewPath = window.location.pathname;
   return (
     <div className="p-6">
-      {/* Header Row */}
       <div
         className={`flex justify-between mb-4 ${
           showSubcategory ? "w-[calc(100%)]" : "w-full "
@@ -213,9 +234,7 @@ const BookingTableList = <T extends Record<string, any>>({
         />
       </div>
 
-      {/* Table */}
       <div className="flex gap-4">
-        {/* Table Section */}
         <div className={showSubcategory ? "w-[calc(100%)]" : "w-full "}>
           <div className="bg-white rounded-lg shadow-lg overflow-x-auto">
             <AnimatePresence mode="wait">
@@ -239,7 +258,6 @@ const BookingTableList = <T extends Record<string, any>>({
                   </thead>
                   <tbody>
                     {data.map((item, idx) => (
-                  
                       <tr key={idx} className="border-t text-left">
                         {headings.map((rowdata) => (
                           <td key={rowdata.key} className="px-2 py-2">
@@ -292,7 +310,6 @@ const BookingTableList = <T extends Record<string, any>>({
           </div>
         </div>
 
-        {/* Subcategory Button Section */}
         {showSubcategory && (
           <div className="w-[250px] ">
             <div className="bg-white shadow rounded h-full flex items-center justify-center p-4">
@@ -306,8 +323,6 @@ const BookingTableList = <T extends Record<string, any>>({
           </div>
         )}
       </div>
-
-      {/* Popup Modal */}
       {renderPopup()}
     </div>
   );

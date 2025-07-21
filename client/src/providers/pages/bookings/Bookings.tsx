@@ -6,7 +6,7 @@ import ViewBookingDetails from "../../../components/popups/booking/ViewBookingDe
 import DeleteConfirmPopup from "../../../components/popups/tools/DeleteConfirmPopup";
 import StatusConfirmPopup from "../../../components/popups/tools/StatusConfirmPopup";
 import { IOrder } from "./OrderInterface";
-
+import BookingStatusUpdatePopup from "../../../components/popups/bookingStatus/BookingStatusUpdatePopup";
 interface CustomersProps {
   userType: string;
 }
@@ -45,7 +45,9 @@ const Bookings = ({ userType }: CustomersProps) => {
 
   const filteredUsers = searchTerm
     ? bookings.filter((bookng) =>
-        bookng.customerId.fullname.toLowerCase().includes(searchTerm.toLowerCase())
+        bookng.customerId.fullname
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())
       )
     : bookings;
 
@@ -69,20 +71,14 @@ const Bookings = ({ userType }: CustomersProps) => {
           { key: "serviceId.serviceName", label: "Service" },
           { key: "subcategoryId.subcategory", label: "Subcategory" },
           { key: "paymentStatus", label: "Pay Status", type: "paymentStatus" },
-          { key: "bookingStatus", label: "Book Status", type: "bookingStatus" },
+          { key: "bookingStatus", label: "Book Status", type: "updateStatus" },
           { key: "bookingAddress", label: "Address" },
         ]}
         showSubcategory={false}
-        showActions={["view", "edit", "blockUnblock"]}
+        showActions={["view",  "blockUnblock", "updateStatus"]}
         actionConfig={{
-          //   add: { type: "page", path: "/provider/addStaff" },
-          // edit: { type: "page", path: "/provider/editStaff" },
           view: { type: "popup", component: ViewBookingDetails },
-          blockUnblock: {
-            type: "popup",
-            component: StatusConfirmPopup,
-            params: { api: "/api/provider/staffBlockUnblock" },
-          },
+          updateStatus: { type: "popup", component: BookingStatusUpdatePopup },
         }}
       />
     </ProviderLayout>

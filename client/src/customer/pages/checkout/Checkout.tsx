@@ -220,16 +220,7 @@ const handleRemoveCoupon = () => {
   const isProceedEnabled = !!address && !!selectedDate && !!selectedTime;
 
   const handleProceedToPay = async () => {
-    console.log(
-      "customerId:",
-      user?._id,
-      " providerId:",
-      idProvider,
-      "  serviceId:",
-      serviceId,
-      "subcategoryId",
-      subcateId
-    );
+   
     try {
       const savingOrder = {
         customerId: user?._id,
@@ -291,18 +282,16 @@ const handleRemoveCoupon = () => {
         amount: advancePaid,
         serviceId: serviceId,
       };
-      console.log(JSON.stringify(savingOrder, null, 2) + "datas");
       const response = await customerAxiosClient.post(
         "/api/create_checkout_session",
         { ordrData, savingOrder }
       );
 
       const data = await response.data;
-      console.log(data);
       if (data.url) {
         window.location.href = data.url;
       } else {
-        alert("Failed to create checkout session");
+         toast.error("Failed to create checkout session");
       }
     } catch (error: any) {
       console.log("Full error object:", error);

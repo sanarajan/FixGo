@@ -1,17 +1,35 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import CustomerLayoutWithSidebar from "../../../components/customerLayout/CustomerLayoutWithSidebar";
 import { useLocation } from "react-router-dom";
 import { IOrder } from "../../../providers/pages/bookings/OrderInterface";
 import { getStatusStyle } from "../../../utils/StatusHelper";
 import LocationPicker from "../../../components/LocationPicker/LocationPicker";
+import CancelBooking from "../../../components/popups/booking/CancelBooking"; // adjust path as needed
+import customerAxiosClient from "../../../api/customerAxiosClient";
+
 const mapStyle = {
   width: "100%",
   height: "150px",
 };
+const cancelOptions = [
+  "Change of plan",
+  "Service no longer needed",
+  "Booked by mistake",
+  "Provider delay",
+  "Other",
+];
+
 const BookingDetails = () => {
   const location = useLocation();
   const bookingDetail = location.state.booking;
-  const [bookings, setBooking] = useState<IOrder>(bookingDetail);
+  // console.log(JSON.stringify(bookingDetail,null,2)+"  FIRST DAT")
+  const bookingId = bookingDetail._id;
+  const [bookings, setBooking] = useState<IOrder | null>(null);
+  //cancel booking
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [bookingStatus, setBookingStatus] = useState<string>("");
+  const [reason, setCancelReason] = useState("");
+
   const imagePath = "providerServices/";
 
   let imageURL = "";
@@ -20,6 +38,50 @@ const BookingDetails = () => {
   imageURL = `${API}/uploads/${imagePath}`;
   let noimg = "noimage.png";
 
+  useEffect(() => {
+    fetchBooking(bookingId);
+  }, [bookingStatus]);
+  const refresh = () => fetchBooking(bookingId);
+
+  const fetchBooking = async (bookingId: string) => {
+    try {
+      // setBusy(true);
+      const API = import.meta.env.VITE_API_URL;
+      const response = await customerAxiosClient.get(
+        `/api/bookingDetails/${bookingId}`
+      );
+      const order = response.data.order;
+      let latestStatus;
+      if (Array.isArray(order) && order.length > 0) {
+        console.log(typeof order + "=== " + Array.isArray(order));
+
+        setBooking(order[0]); // ✅ Get the first booking object
+        setBookingStatus(order[0].bookingStatus);
+        latestStatus =
+          order[0]?.statusHistory[order[0].statusHistory.length - 1] || {};
+        console.log(latestStatus.reason);
+      } else if (order && typeof order === "object") {
+        setBooking(order); // ✅ In case it already is a single object
+        setBookingStatus(order.bookingStatus);
+        latestStatus =
+          order?.statusHistory[order.statusHistory.length - 1] || {};
+        console.log(latestStatus.reason);
+      } else {
+        console.error("Invalid booking format:", order);
+      }
+
+      setCancelReason(latestStatus.reason || "");
+    } catch (error) {
+      console.error("Error fetching bookings:", error);
+    } finally {
+      // setBusy(false);
+    }
+  };
+
+  const handleCancelSuccess = (reason: string) => {
+    setBookingStatus("Cancelled");
+    setCancelReason(reason);
+  };
   return (
     <CustomerLayoutWithSidebar>
       <div className="bg-[#6060B8] min-h-screen p-6">
@@ -44,8 +106,11 @@ const BookingDetails = () => {
                       </h2>
                       <p className="text-sm mt-2">
                         <strong>DATE:</strong>{" "}
-                        {new Date(bookings?.slot?.date).toLocaleDateString()}
+                        {bookings?.slot?.date
+                          ? new Date(bookings.slot.date).toLocaleDateString()
+                          : "N/A"}
                       </p>
+
                       <p className="text-sm">
                         <strong>TIME:</strong> {bookings?.slot?.time}
                       </p>
@@ -60,7 +125,7 @@ const BookingDetails = () => {
                     <div className="flex flex-col items-end">
                       <img
                         src={
-                          bookings.providerServiceId?.image
+                          bookings?.providerServiceId?.image
                             ? imageURL + bookings.providerServiceId.image
                             : "https://via.placeholder.com/120x100?text=Booking"
                         }
@@ -69,10 +134,10 @@ const BookingDetails = () => {
                       />
                       <span
                         className={` text-white text-xs px-3 py-1 rounded-full mt-2 ${getStatusStyle(
-                          bookings.bookingStatus || "Pending" // fallback if status is undefined
+                          bookingStatus || "Pending" // fallback if status is undefined
                         )}`}
                       >
-                        {bookings?.bookingStatus}
+                        {bookingStatus}
                       </span>
                     </div>
                   </div>
@@ -108,7 +173,7 @@ const BookingDetails = () => {
                   <div className="flex items-center gap-4">
                     <img
                       src={
-                        bookings.providerServiceId?.image
+                        bookings?.providerServiceId?.image
                           ? imageURL + bookings.customerId.image
                           : "https://via.placeholder.com/120x100?text=Booking"
                       }
@@ -139,7 +204,7 @@ const BookingDetails = () => {
                   <div className="flex items-center gap-4">
                     <img
                       src={
-                        bookings.providerServiceId?.image
+                        bookings?.providerServiceId?.image
                           ? imageURL + bookings.providerId?.image
                           : imageURL + noimg
                       }
@@ -182,7 +247,6 @@ const BookingDetails = () => {
                     Price Details
                   </h3>
                   <div className="text-sm text-gray-700 space-y-1">
-                    
                     <div className="flex justify-between">
                       <span>Total Price</span>
                       <span>₹{bookings?.amount?.total}</span>
@@ -213,10 +277,32 @@ const BookingDetails = () => {
                 </div>
               </div>
 
-              {/* Cancel Booking */}
-              <button className="w-full bg-[#6060B8] text-white py-2 rounded-full shadow hover:bg-[#4a4aad] transition-all duration-300 hover:scale-105">
-                Cancel Booking
-              </button>
+              {/* Booking Status or Cancel Button */}
+              {bookingStatus === "Cancelled" ? (
+                <div className="text-center">
+                  <div className="w-full bg-red-500 text-white py-2 rounded-full font-semibold shadow">
+                    Booking Cancelled
+                  </div>
+                  {reason && (
+                    <p className="text-sm text-gray-600 mt-2 italic">
+                      Reason: {reason}
+                    </p>
+                  )}
+                </div>
+              ) : bookingStatus === "Completed" ? (
+                <div className="w-full bg-green-500 text-white text-center py-2 rounded-full font-semibold shadow">
+                  Booking Completed
+                </div>
+              ) : (
+                bookingStatus !== "Ongoing" && (
+                  <button
+                    className="w-full bg-[#6060B8] text-white py-2 rounded-full shadow hover:bg-[#4a4aad] transition-all duration-300 hover:scale-105"
+                    onClick={() => setShowCancelModal(true)}
+                  >
+                    Cancel Booking
+                  </button>
+                )
+              )}
 
               {/* Reviews - Static Sample */}
               <div className="bg-[#ECEBF2] p-3 rounded-xl shadow-md hover:scale-[1.02] hover:-translate-y-1 transition-all">
@@ -254,6 +340,23 @@ const BookingDetails = () => {
                   </div>
                 </div>
               </div>
+              {showCancelModal && (
+                <CancelBooking
+                  show={showCancelModal}
+                  // cancelOptions={cancelOptions}
+                  bookingId={bookings?._id || ""}
+                  API={API}
+                  onClose={() => setShowCancelModal(false)}
+                  serviceDateTime={bookings?.createdAt || ""}
+                  onCancelSuccess={(reason: string) => {
+                    setBookingStatus("Cancelled");
+                    setCancelReason(reason);
+                    setShowCancelModal(false); // Close popup
+                    refresh();
+                  }}
+                  refresh={refresh}
+                />
+              )}
             </div>
           </div>
         </div>
