@@ -43,9 +43,11 @@ const login = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+    console.log("reached login")
     const { email, password, userType } = req.body;
     const loginUser = container.resolve(LoginUser);
     const { tokens, user } = await loginUser.execute(email, password, userType);
+
     let cookieName = `${userType}_refreshToken`;
 // let accessTokName= `${userType}_accessToken`
     res.cookie(cookieName, tokens.refreshToken, {

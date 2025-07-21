@@ -14,7 +14,8 @@ import { SaveProfileUsecase } from "../../application/use-cases/provider/provide
 import { ProviderEditUsecase } from "../../application/use-cases/provider/providerServices/ProviderEditUsecase";
 import { ProviderAddressEditUsecase } from "../../application/use-cases/provider/providerServices/ProviderAddressEditUsecase";
 import { ProviderResetPasswordUsecase } from "../../application/use-cases/provider/providerServices/ProviderResetPasswordUsecase";
-
+import { GetCustomerWalletUseCase } from "../../application/use-cases/customer/wallet/GetCustomerWalletUseCase";
+import { GetCustomerTransactionsUseCase } from "../../application/use-cases/customer/wallet/GetCustomerTransactionsUseCase";
 interface CustomError extends Error {
   status?: number;
 }
@@ -260,3 +261,30 @@ export const customerPasswordReset = async (
     res.status(500).json({ message: error.message || "Something went wrong" });
   }
 };
+
+export const getWallet = async (req: Request, res: Response):Promise<void>=> {
+    try {
+       const admin = (req as any).user;
+
+    const customerId = admin.id;
+      const walletUsecase = container.resolve(GetCustomerWalletUseCase);
+      const wallet = await walletUsecase.execute(customerId);
+       res.status(200).json(wallet);
+    } catch (error: any) {
+       res.status(500).json({ message: error.message });
+    }
+  }
+  export const getTransactions= async (req: Request, res: Response):Promise<void>=> {
+    try {
+       const admin = (req as any).user;
+    const customerId = admin.id;
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 5;
+      const useCase = container.resolve(GetCustomerTransactionsUseCase);
+      const result = await useCase.execute(customerId, page, limit);
+       res.status(200).json(result);
+    } catch (error: any) {
+       res.status(500).json({ message: error.message });
+    }
+  }
+

@@ -10,7 +10,7 @@ const walletSchema = new mongoose.Schema(
       history: [ 
         {
           transactionType:  { type: String,
-            enum: ['credit', 'debit', 'Referral', 'purchase', 'Refund'],
+            enum: ['credit', 'debit', 'referral', 'purchase', 'refund'],
           }, 
           amount:  {type:Number,default:0},  
           date: { type: Date, default: null} 

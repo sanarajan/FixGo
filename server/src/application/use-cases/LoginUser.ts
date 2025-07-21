@@ -20,19 +20,23 @@ export class LoginUser {
   ): Promise<{ tokens: { accessToken: string; refreshToken: string }; user: Partial<User> }> {       
 
     const user = await this.userRepository.findByEmail(email);
+
     if (!user) { 
+
       const error = new Error("User not found");
       (error as any).status = 404;
       throw error;
     }          
-    
     if (userType === "provider") {
+                   
+
       if (user.role !== "worker" && user.role !== "provider") {
         const error = new Error("Invalid user type");
         (error as any).status = 403;
         throw error;
       }
     } else {           
+                 
 
       if (user.role !== userType) { 
         const error = new Error("Invalid user type");
@@ -42,7 +46,6 @@ export class LoginUser {
     }
     
     const isMatch = await this.hashService.compare(password, user.password);
-
     if (!isMatch) {
       const error = new Error("Invalid credentials");
       (error as any).status = 401;
